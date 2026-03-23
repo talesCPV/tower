@@ -179,6 +179,7 @@
         height: 60%;
         display: flex;
         flex-direction: row;
+        z-index: 1;
     }
 
     .upgrade p{
