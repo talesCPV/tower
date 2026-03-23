@@ -1,0 +1,214 @@
+    @font-face {
+        font-family: Roboto;
+        src: url(assets/fonts/Roboto-Medium.ttf);
+    }
+
+
+    body{
+        display: flex;
+        font-family: Roboto;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+
+    .desktop{
+        width: 600px;
+        height: 400px;
+        display: flex;
+        flex-direction: row;
+        background-color: aliceblue;
+        background-image: url(assets/background.jpg);
+        background-size: cover;
+    }
+
+    .top, .bottom{
+        height: 10%;
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        background-color: #00000070;
+    }
+
+    .middle{
+        height: 100%;
+        width: 70%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .field{
+        height: 80%;
+    }
+
+    .weapons{
+        position: relative;
+        width: 30%;
+        height: 100%;
+        background-color: #00000070;
+    }
+
+    .mute{
+        position: absolute;
+        bottom: 0;
+        width: 90%;
+    }
+
+
+    .top p:nth-child(1){
+        color: white;
+    }
+
+    .top p:nth-child(2){
+        color: #00cbff;
+    }
+
+    .top p:nth-child(3){
+        color: #0f6;
+    }
+
+    .top p:nth-child(4){
+        color: #ff0;
+    }
+
+    .top p:nth-child(5){
+        color: #f00;
+    }
+
+    .comands, .mute{
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: row;
+        justify-content: center;
+        padding: 10px;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .comands div:nth-child(1), .comands div:nth-child(2), .mute div{
+        width: 40%;
+    }
+
+    .comands div:nth-child(3){
+        width: calc(14px + 80%);
+    }
+
+    .btn:hover{
+        cursor: pointer;
+        border: solid 2px #b97008;
+    }
+
+    .btn{
+        border: solid 2px #fe9808;
+        background-color: #000000;
+        color: #FFFFFF;
+        font-size: 0.8em;
+    }
+
+    .kinds{
+        display: flex;
+        justify-content: center;
+        flex-direction: row;
+        gap: 5px;
+    }
+
+    .kinds img{
+        width: 17%;
+        cursor: pointer;
+    }
+
+    .upgrade{
+        height: 70%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-evenly;
+    }
+
+    .upgrade > div{
+        width: 90%;
+        height: 40%;
+        box-shadow: 0 0 5px #fe9808, 0 0 5px #fe9808;
+        background-color: #d6d5c1e8;
+
+        font-size: 0.7em;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .upgrade > div > div{
+        border: solid 2px;
+        box-shadow: unset;
+        background-color: #fe9900;
+        width: 70%;
+        height: 60%;
+        display: flex;
+        flex-direction: row;
+    }
+
+    .upgrade p{
+        margin: 0;
+        width: 100%;
+        padding-left: 15px;
+    }
+
+    .upgrade > div > p:nth-child(1){
+        font-weight: bold;
+        font-size: 1em;
+    }
+
+    .upgrade > div > p:nth-child(2){
+        font-weight: lighter;
+        font-size: 0.8em;
+    }
+
+    .upgrade > div > div > div{
+        font-size: 0.9em;
+        font-weight: normal;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .upgrade > div > div > div:nth-child(2) > p:nth-child(1){
+        color: rgb(215, 252, 10);
+        font-size: 1.1em;
+        font-weight: bold;
+    }
+
+    .upgrade > div > div > div:nth-child(2) > p:nth-child(2){
+        color: rgb(252, 10, 10);
+        font-size: 1.1em;
+        font-weight: bold;
+    }
+
+    .upgrade > div > div > div:nth-child(2) > p:nth-child(3){
+        color: rgb(14, 10, 252);
+        font-size: 1.1em;
+        font-weight: bold;
+    }
+
+    .btn-upgd{
+        cursor: pointer;
+        border-radius: 10px;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        bottom: -5px;
+        left: 28%;
+        color: white;
+        border: unset !important;
+        width: 50% !important;
+    }
+
+    .sell{
+        background-color: #a40300 !important;
+    }
+
+    .buy{
+        background-color: #009100 !important;        
+    }
