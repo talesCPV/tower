@@ -15,7 +15,7 @@
 
     .desktop{
         width: 600px;
-        height: 400px;
+        height: 450px;
         display: flex;
         flex-direction: row;
         background-color: aliceblue;
@@ -46,10 +46,14 @@
         align-items: center;
     }
 
-    .grid{       
-        width: 80%;
+    #grid{
+        width: 79.16%;
         height: 80%;
-        border: 15px solid #ffffff9c;
+        border: 15px solid #ffffff00;
+    }
+
+    .grid{       
+        border: 15px solid #ffffff9c !important;
         clip-path: polygon(
             0 0,
             35% 0,
@@ -226,15 +230,16 @@
 
     .btn-upgd{
         cursor: pointer;
-        border-radius: 10px;
+        border-radius: 15px;
         justify-content: center;
         align-items: center;
         position: relative;
-        bottom: -5px;
+        bottom: -12px;
         left: 28%;
         color: white;
         border: unset !important;
         width: 50% !important;
+        max-height: 20px;
     }
 
     .sell{
@@ -243,4 +248,22 @@
 
     .buy{
         background-color: #009100 !important;        
+    }
+
+    .line-path{
+        display: flex;
+        width: 100%;
+        height: calc(100%/10);
+        justify-content: space-around;
+    }
+
+    .cel-path{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 10%;
+    }
+
+    .arm .cel-path:hover{
+        background-color: rgba(58, 226, 58, 0.5);
     }
