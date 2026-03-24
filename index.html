@@ -17,7 +17,7 @@
                 <p>Score:0</p>
             </div>
                 <div class="field">
-                    <div id="grid" class="grid arm"></div>
+                    <div id="grid" class="grid"></div>
                 </div>
             <div class="bottom"></div>
         </div>
@@ -28,16 +28,16 @@
                 <div class="btn">Send Next Level</div>
             </div>
             <div class="kinds">
-                <img src="assets/w1.png" alt="">
-                <img src="assets/w2.png" alt="">
-                <img src="assets/w3.png" alt="">
-                <img src="assets/w4.png" alt="">
-                <img src="assets/w5.png" alt="">
+                <img src="assets/w1.png" alt="" onclick="showWeapon(0)">
+                <img src="assets/w2.png" alt="" onclick="showWeapon(1)">
+                <img src="assets/w3.png" alt="" onclick="showWeapon(2)">
+                <img src="assets/w4.png" alt="" onclick="showWeapon(3)">
+                <img src="assets/w5.png" alt="" onclick="showWeapon(4)">
             </div>
             <div class="upgrade">
-                <div>
-                    <p>Pellet Tower 1</p>
-                    <p>Cheap lower that fines pellets</p>
+                <div id="panel-1" class="">
+                    <p class="title">Pellet Tower 1</p>
+                    <p class="about">Cheap lower that fines pellets</p>
                     <div>
                         <div>
                             <p>Cost:</p>
@@ -46,15 +46,15 @@
                             <p>Speed:</p>
                         </div>
                         <div>
-                            <p>5</p>
-                            <p>10</p>
-                            <p>60</p>
-                            <p>slow</p>
+                            <p class="coast">5</p>
+                            <p class="damage">10</p>
+                            <p class="range">60</p>
+                            <p class="speed">slow</p>
                         </div>
                     </div>
                     <div class="btn-upgd sell">Sell for 3</div>
                 </div>
-                <div>
+                <div id="panel-2" class="">
                     <p>Pellet Tower 2</p>
                     <p>Cheap lower that fines pellets</p>
                     <div>
