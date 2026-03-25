@@ -1,5 +1,30 @@
 const game = new Object
 
+    game.clock = setInterval(()=>{
+        if(!game.pause){
+            game.count++
+            game.scroll +=0.026
+            document.querySelector('.bottom').scrollTo(game.scroll,0)
+
+            if(game.count >= 100){
+                game.count=0
+                game.time--
+                game.time < 0 ? nextLevel() : null                
+            }
+        }
+        score()
+    }, 10);
+
+
+    async function loadData() {
+        const response = await fetch("data.json");
+        const json = await response.json();
+        game.weapons = json.weapons
+        game.enemies = json.enemies
+        reset()
+    }
+
+function reset(){
     game.time = 30
     game.level = 1
     game.lives = 20
@@ -10,42 +35,17 @@ const game = new Object
 
     game.grid = 1
     game.mute = 0
-    game.pause = 0
+    game.pause = 1
 
     game.scroll = 0
 
-    game.enemies = []
-    game.weapons = []
+//    game.enemies = []
+//    game.weapons = []
     game.board = []
+    document.querySelector('.bottom').scrollTo(0,0)
 
-    game.clock = setInterval(()=>{
-        game.count++
-        game.scroll +=0.027
-        document.querySelector('.bottom').scrollTo(game.scroll,0)
+    score()
 
-        if(Math.floor(game.scroll)%81 == 0){
-            game.time=30
-// next wave            
-        }
-
-        if(game.count >= 100){
-            game.count=0
-            game.time--
-            score()
-        }
-    }, 10);
-
-
-    async function loadData() {
-        const response = await fetch("data.json");
-        const json = await response.json();
-        game.weapons = json.weapons
-        game.enemies = json.enemies
-        drawGrid()
-        score()
-    }
-
-function drawGrid(){
     const grid =  document.querySelector('#grid')
     grid.innerHTML = ''
     for(let y=0; y<10; y++){
@@ -92,6 +92,13 @@ function drawGrid(){
 
 }
 
+function nextLevel(){
+    game.time=30
+    const next_level = game.scroll +(82 - + (game.scroll % 82))
+    game.scroll = next_level
+    score()
+}
+
 
 
 function score(){
@@ -100,6 +107,7 @@ function score(){
     document.querySelector('.lives').innerHTML = `Lives:${game.lives}`
     document.querySelector('.gold').innerHTML = `Gold:${game.gold}`
     document.querySelector('.score').innerHTML = `Score:${game.score}`
+    document.querySelector('.bottom').scrollTo(game.scroll,0)
 }
 
 function showArea(set=1){
@@ -132,9 +140,20 @@ function showWeapon(wp=0,pos=null){
         document.querySelector('#panel-2').classList.remove('hide')
     }    
 
-
-
 }
+
+document.querySelector('#btn-start').addEventListener('click',()=>{
+    game.pause = !game.pause
+    document.querySelector('#btn-start').innerHTML = game.pause ? 'START' : 'PAUSE'
+})
+
+document.querySelector('#btn-reset').addEventListener('click',()=>{
+    reset()
+})
+
+document.querySelector('#btn-next').addEventListener('click',()=>{
+    nextLevel()
+})
 
 document.querySelector('#btn-grid').addEventListener('click',()=>{
     game.grid = !game.grid
