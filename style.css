@@ -33,6 +33,8 @@
         flex-direction: row;
         justify-content: space-evenly;
         background-color: #00000070;
+        gap: 2px;
+        overflow: hidden;
     }
 
     .middle{
@@ -162,7 +164,9 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: space-evenly;
+        /*justify-content: space-evenly;*/
+        padding: 10px 0;
+        gap: 20px;
     }
 
     .upgrade > div{
@@ -176,14 +180,15 @@
         flex-direction: column;
         align-items: center;
         gap: 5px;
+        padding-bottom: 10px;
     }
 
     .upgrade > div > div{
         border: solid 2px;
         box-shadow: unset;
         background-color: #fe9900;
-        width: 70%;
-        height: 60%;
+        width: 110px;
+        height: 70px;
         display: flex;
         flex-direction: row;
         z-index: 1;
@@ -237,7 +242,7 @@
         justify-content: center;
         align-items: center;
         position: relative;
-        bottom: -12px;
+        bottom: -20px;
         left: 28%;
         color: white;
         border: unset !important;
@@ -270,3 +275,50 @@
     .arm .cel-path:hover{
         background-color: rgba(58, 226, 58, 0.5);
     }
+
+    .enemy-square{
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #222;
+        color: #600;
+        min-width: 80px;
+    }
+
+    .square-num{
+        position: absolute;
+        font-size: 3em;
+        text-shadow: 1px 1px 2px #fe9808;
+    }
+
+    .square-name{
+        color: white;
+        z-index: 1;
+        font-size: 0.8em;
+    }
+
+    .NORMAL{
+        background-color: #222;
+    }
+
+    .GROUP{
+        background-color: #05a;
+    }
+
+    .IMUNE{
+        background-color: #ab02a8;
+    }
+
+    .FAST{
+        background-color: #a00;
+    }
+
+    .SPAW{
+        background-color: #050;
+    }
+
+    .FLYING{
+        background-color: #aa0;
+    }
+
