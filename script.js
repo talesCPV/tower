@@ -1,7 +1,7 @@
 const game = new Object
 
     game.clock = setInterval(()=>{
-        if(!game.pause){
+        if(!game.pause && game.scroll < 4098 ){
             game.count++
             game.scroll +=0.026
             document.querySelector('.bottom').scrollTo(game.scroll,0)
@@ -10,7 +10,11 @@ const game = new Object
                 game.count=0
                 game.time--
                 game.time < 0 ? nextLevel() : null                
+                game.time = game.time < 0 ? 0 : game.time
             }
+        }else{
+            game.pause = 1
+            document.querySelector('#btn-start').innerHTML = 'START' 
         }
         score()
     }, 10);
@@ -70,11 +74,12 @@ function reset(){
     const bottom = document.querySelector('.bottom')
     bottom.innerHTML = ''
     let j=0
-    for(let i=1; i<=50; i++){
+
+
+    function newSquare(id,i){
         const square = document.createElement('div')
         square.className = 'enemy-square'
-        square.classList.add(game.enemies[j].name)
-        bottom.appendChild(square)
+        square.classList.add(id)
 
         const num = document.createElement('p')
         num.className = 'square-num'
@@ -83,31 +88,41 @@ function reset(){
 
         const name = document.createElement('p')
         name.className = 'square-name'
-        name.innerHTML = game.enemies[j].name
+        name.innerHTML = id
         square.appendChild(name)
-
-        j = j<game.enemies.length-1 ? j+1 : 0
-
+        return square
     }
 
+    for(let i=1; i<=50; i++){
+        bottom.appendChild(newSquare(game.enemies[j].name,i))
+        j = j<game.enemies.length-1 ? j+1 : 0
+    }
+    const last_square = newSquare('teste',0)
+    last_square.classList.add('last-square')
+    last_square.innerHTML = ''
+    bottom.appendChild(last_square)
 }
 
 function nextLevel(){
-    game.time=30
-    const next_level = game.scroll +(82 - + (game.scroll % 82))
-    game.scroll = next_level
-    score()
+    if(game.level < 50 ){
+        game.level ++
+        game.time=30
+        const next_level = game.scroll +(82 - + (game.scroll % 82))
+        game.scroll = next_level
+        score()
+    }
 }
 
-
-
 function score(){
-    document.querySelector('.time').innerHTML = `Time:${game.time}`
-    document.querySelector('.level').innerHTML = `Level:${game.level}`
-    document.querySelector('.lives').innerHTML = `Lives:${game.lives}`
-    document.querySelector('.gold').innerHTML = `Gold:${game.gold}`
-    document.querySelector('.score').innerHTML = `Score:${game.score}`
-    document.querySelector('.bottom').scrollTo(game.scroll,0)
+    try{
+        document.querySelector('.time').innerHTML = `Time:${game.time.toString().padStart(2,0)}`
+        document.querySelector('.level').innerHTML = `Level:${game.level.toString().padStart(2,0)}`
+        document.querySelector('.lives').innerHTML = `Lives:${game.lives.toString().padStart(2,0)}`
+        document.querySelector('.gold').innerHTML = `Gold:${game.gold}`
+        document.querySelector('.score').innerHTML = `Score:${game.score}`
+        document.querySelector('.bottom').scrollTo(game.scroll,0)
+    }catch{null}
+
 }
 
 function showArea(set=1){
