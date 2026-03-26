@@ -52,6 +52,39 @@ function reset(){
 
     const grid =  document.querySelector('#grid')
     grid.innerHTML = ''
+
+    function drawWeapom(y,x){
+        const wp = game.board[y][x]
+        const cel = document.querySelector(`#cel-${y}-${x}`)
+        cel.innerHTML = ''
+
+        const cnv = document.createElement('canvas')
+        cel.appendChild(cnv)
+        const base = new Image()
+        base.src = 'assets/w_base.png'
+
+        const arm = new Image()
+        arm.src = `assets/w${wp.id+1}_cannon.png`
+
+        console.log(cel)
+
+        if (cnv.getContext) {
+            ctx = cnv.getContext('2d');
+            ctx.drawImage(base,0,0,300,150);
+            ctx.save();
+//            ctx.scale(1, 1);
+//            ctx.translate(13,-14.5);
+//            ctx.translate(180,-180);
+            ctx.rotate(10 * (Math.PI / 180))
+            ctx.drawImage(base,0,0,300,150);
+            ctx.drawImage(arm,0,0,300,150);
+            ctx.restore();       
+            console.log(base)     
+        }
+
+
+    }
+
     for(let y=0; y<10; y++){
         const line = document.createElement('div')
         line.className = 'line-path'
@@ -61,10 +94,31 @@ function reset(){
             const cel = document.createElement('div')
             cel.className = 'cel-path'
             cel.id = `cel-${y}-${x}`
+            cel.addEventListener('click',(e)=>{
+                if(e.target.parentNode.parentNode.classList.contains('arm') && !game.board[y][x].coast){
+                    const weapom = document.querySelector('#panel-1').weapom
+                    if(game.gold >= weapom.coast){
+                        game.gold -= weapom.coast
+                        game.board[y][x] = weapom 
+                        drawWeapom(y,x)
+                    }
+                    console.log(weapom)
+    
+                }
+            })
             line.appendChild(cel)
             const obj = new Object
-            obj.weapom = 0
+            obj.about = ''
+            obj.coast = 0
+            obj.damage = 0
+            obj.id = 0
+            obj.name = ''
+            obj.range = 0
+            obj.sell = 0
+            obj.speed = 0
+            obj.upgrade = ""
             obj.level = 0
+            obj.angle = 0
             game.board[game.board.length-1].push(obj)
         }
     }
@@ -142,6 +196,11 @@ function showWeapon(wp=0,pos=null){
         const spd_name = speed > 4 ? 'very slow' : speed < 2 ? 'fast' : speed==2 ? 'average' : 'slow' 
         document.querySelector('#panel-2').classList.add('hide')
         document.querySelector('.sell').classList.add('hide')
+
+        document.querySelector('#panel-1').weapom = game.weapons[wp][0]
+        document.querySelector('#panel-1').weapom.id  = wp
+        document.querySelector('#panel-1').weapom.level = 0
+        document.querySelector('#panel-1').weapom.angle = 0
 
         document.querySelector('#panel-1').querySelector('.title').innerHTML = game.weapons[wp][0].name
         document.querySelector('#panel-1').querySelector('.about').innerHTML = game.weapons[wp][0].about
