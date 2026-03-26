@@ -66,20 +66,36 @@ function reset(){
         const arm = new Image()
         arm.src = `assets/w${wp.id+1}_cannon.png`
 
-        console.log(cel)
+
+        const angle = 0 
 
         if (cnv.getContext) {
+
+            const w = arm.width
+            const h = arm.height
+            
+            cnv.width = w << 1; //double the canvas width
+            cnv.height = h << 1; //double the canvas height
+            const sn = Number(Math.sin(Math.PI / 180 * angle).toFixed(2))
+            const cs = Number(Math.cos(Math.PI / 180 * angle).toFixed(2))
+
+            os_w = angle <=180 ? sn*w : 0
+            os_h = angle >90 && angle <270 ? cs*h : 0
+
+
+            console.log(w,h,sn,cs, w*cs, h/2*sn,os_w,os_h)
+
             ctx = cnv.getContext('2d');
-            ctx.drawImage(base,0,0,300,150);
+            ctx.drawImage(base,0,0,cnv.width,cnv.height);
             ctx.save();
+//            ctx.clearRect(0, 0, cnv.width, cnv.height)
 //            ctx.scale(1, 1);
-//            ctx.translate(13,-14.5);
-//            ctx.translate(180,-180);
-            ctx.rotate(10 * (Math.PI / 180))
-            ctx.drawImage(base,0,0,300,150);
-            ctx.drawImage(arm,0,0,300,150);
+//            ctx.translate(arm.width/2 + os_w, arm.height/2 );
+            ctx.translate(arm.width/2 + 0, arm.height/2 + h/2*Math.abs(cs));
+            ctx.rotate(Math.PI / 180 * angle)
+//            ctx.drawImage(base,0,0,300,300);
+            ctx.drawImage(arm,-w/2,-h/2,cnv.width,cnv.height);
             ctx.restore();       
-            console.log(base)     
         }
 
 
