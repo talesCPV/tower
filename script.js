@@ -67,7 +67,9 @@ function reset(){
         arm.src = `assets/w${wp.id+1}_cannon.png`
 
 
-        const angle = 0 
+        const angle = 45
+        const w1 = 20
+        const h1 = -42 
 
         if (cnv.getContext) {
 
@@ -79,22 +81,20 @@ function reset(){
             const sn = Number(Math.sin(Math.PI / 180 * angle).toFixed(2))
             const cs = Number(Math.cos(Math.PI / 180 * angle).toFixed(2))
 
-            os_w = angle <=180 ? sn*w : 0
-            os_h = angle >90 && angle <270 ? cs*h : 0
-
-
-            console.log(w,h,sn,cs, w*cs, h/2*sn,os_w,os_h)
+            console.log(w,h,sn,cs)
 
             ctx = cnv.getContext('2d');
             ctx.drawImage(base,0,0,cnv.width,cnv.height);
+            ctx.drawImage(arm,0,0,w*2,h*2);
             ctx.save();
 //            ctx.clearRect(0, 0, cnv.width, cnv.height)
 //            ctx.scale(1, 1);
 //            ctx.translate(arm.width/2 + os_w, arm.height/2 );
-            ctx.translate(arm.width/2 + 0, arm.height/2 + h/2*Math.abs(cs));
+//            ctx.translate(arm.width/2 + 0, arm.height/2 + h/2*Math.abs(cs));
             ctx.rotate(Math.PI / 180 * angle)
 //            ctx.drawImage(base,0,0,300,300);
-            ctx.drawImage(arm,-w/2,-h/2,cnv.width,cnv.height);
+//            ctx.drawImage(arm,-w/2,-h/2,cnv.width,cnv.height);
+            ctx.drawImage(arm,w1,h1,w*2,h*2);
             ctx.restore();       
         }
 
