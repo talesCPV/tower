@@ -12,6 +12,7 @@ then
     git add script.js
     git add style.css
     git add index.html
+    git add teste.html
     git add commit.sh
     
     git commit -m "by_script"
