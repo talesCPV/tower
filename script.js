@@ -67,9 +67,9 @@ function reset(){
         arm.src = `assets/w${wp.id+1}_cannon.png`
 
 
-        const angle = 45
-        const w1 = 20
-        const h1 = -42 
+        const angle = 135
+        const w1 = -32
+        const h1 = -105
 
         if (cnv.getContext) {
 
