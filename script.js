@@ -1,3 +1,41 @@
+
+class Enemy{
+    constructor(id_en=0, force=1){
+        this.id = id_en
+        this.name = game.db.enemies[id_en].name
+        this.background = game.db.enemies[id_en].background
+        this.flying = game.db.enemies[id_en].flying
+        this.imune = game.db.enemies[id_en].imune
+        this.health = game.db.enemies[id_en].health * force
+        this.speed = game.db.enemies[id_en].speed
+        this.angle = 0
+        this.x = -10
+        this.y = 150
+    }
+}
+
+Enemy.prototype.move = function(){
+
+}
+
+
+class Weapom{
+    constructor(id_wep=0,x,y){
+        this.id = id_wep
+        this.name = game.db.weapons[id_wep].name
+        this.about = game.db.weapons[id_wep].about
+        this.upgrade = game.db.weapons[id_wep].upgrade
+        this.coast = game.db.weapons[id_wep].coast
+        this.damage = game.db.weapons[id_wep].damage
+        this.speed = game.db.weapons[id_wep].speed
+        this.range = game.db.weapons[id_wep].range
+        this.sell = game.db.weapons[id_wep].sell
+        this.x = x
+        this.y = y
+    }
+}
+
+
 const game = new Object
 
     game.clock = setInterval(()=>{
@@ -23,54 +61,112 @@ const game = new Object
     async function loadData() {
         const response = await fetch("data.json");
         const json = await response.json();
-        game.weapons = json.weapons
-        game.enemies = json.enemies
+        game.db = new Object
+        game.db.weapons = json.weapons
+        game.db.enemies = json.enemies
         reset()
     }
 
-    function drawWeapom(id_wep,ang){
+    function showArm(){
 
-        const cnv = document.createElement('canvas')
+        function drawWeapom(id_wep,ang){
 
-        cnv.width = 100
-        cnv.height = 100
-
-        const base = new Image()
-        base.src = 'assets/w_base.png'
-        base.height = base.width
-
-        const arm = new Image()
-        arm.src = `assets/w${id_wep}_cannon.png`
-
-        const angle = ang +35
-        const offset = 0
-        const l = arm.width
-        const h = arm.height
-        const offset_ang = ((Math.atan2(l/2, h/2) * 180) / Math.PI) + 90
-        const scale =  cnv.width / base.width
-
-        const center = [offset+l/2,offset+h/2]
-        const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
-        const sin = Number((Math.sin(Math.PI/180 * angle)).toFixed(2))
-        const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
-        const cord = [center[0]+raio*cos, center[1]+raio*sin]
-
-//console.log(l,h,base.width,base.height)
-
-        if (cnv.getContext) {
-            ctx = cnv.getContext('2d');
-            ctx.clearRect(0, 0, cnv.width, cnv.height)
-            ctx.save();
-            ctx.scale(scale,scale)
-            ctx.drawImage(base,offset,offset, base.width, base.height)
-            ctx.translate(cord[0]+((base.width-l)/2),cord[1]+((base.height-h)/2));
-            ctx.rotate(Math.PI / 180 * (angle + offset_ang))
-//            ctx.strokeRect(0,0, l, h)
-            ctx.drawImage(arm,0,0, l,h);
-            ctx.restore(); 
+            const cnv = document.createElement('canvas')
+    
+            cnv.width = 100
+            cnv.height = 100
+    
+            const base = new Image()
+            base.src = 'assets/w_base.png'
+            base.height = base.width
+    
+            const arm = new Image()
+            arm.src = `assets/w${id_wep}_cannon.png`
+    
+            const angle = ang +35
+            const offset = 0
+            const l = arm.width
+            const h = arm.height
+            const offset_ang = ((Math.atan2(l/2, h/2) * 180) / Math.PI) + 90
+            const scale =  cnv.width / base.width
+    
+            const center = [offset+l/2,offset+h/2]
+            const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
+            const sin = Number((Math.sin(Math.PI/180 * angle)).toFixed(2))
+            const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
+            const cord = [center[0]+raio*cos, center[1]+raio*sin]
+    
+            if (cnv.getContext) {
+                ctx = cnv.getContext('2d');
+                ctx.clearRect(0, 0, cnv.width, cnv.height)
+                ctx.save();
+                ctx.scale(scale,scale)
+                ctx.drawImage(base,offset,offset, base.width, base.height)
+                ctx.translate(cord[0]+((base.width-l)/2),cord[1]+((base.height-h)/2));
+                ctx.rotate(Math.PI / 180 * (angle + offset_ang))
+                ctx.drawImage(arm,0,0, l,h);
+                ctx.restore(); 
+            }
+    
+            return cnv
         }
 
-        return cnv
+        for(let y=0; y<game.board.length; y++){
+            for(let x=0; x<game.board[y].length; x++){
+                const cel = document.querySelector(`#cel-${y}-${x}`)
+                cel.innerHTML = ''
+                const wep = game.board[y][x]
+                if(wep.damage){
+                    cel.appendChild(drawWeapom(wep.id+1,wep.angle))    
+                }
+            }
+        }
+    }
+
+    function showEnemies(){
+
+        function drawEnemy(id_enemy){
+
+            const cnv = document.createElement('canvas')
+    
+            cnv.width = 100
+            cnv.height = 100
+    
+            const enemy = new Image()
+            base.src = 'assets/w_base.png'
+            base.height = base.width
+    
+            const arm = new Image()
+            arm.src = `assets/w${id_wep}_cannon.png`
+    
+            const angle = ang +35
+            const offset = 0
+            const l = arm.width
+            const h = arm.height
+            const offset_ang = ((Math.atan2(l/2, h/2) * 180) / Math.PI) + 90
+            const scale =  cnv.width / base.width
+    
+            const center = [offset+l/2,offset+h/2]
+            const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
+            const sin = Number((Math.sin(Math.PI/180 * angle)).toFixed(2))
+            const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
+            const cord = [center[0]+raio*cos, center[1]+raio*sin]
+    
+            if (cnv.getContext) {
+                ctx = cnv.getContext('2d');
+                ctx.clearRect(0, 0, cnv.width, cnv.height)
+                ctx.save();
+                ctx.scale(scale,scale)
+                ctx.drawImage(base,offset,offset, base.width, base.height)
+                ctx.translate(cord[0]+((base.width-l)/2),cord[1]+((base.height-h)/2));
+                ctx.rotate(Math.PI / 180 * (angle + offset_ang))
+                ctx.drawImage(arm,0,0, l,h);
+                ctx.restore(); 
+            }
+    
+            return cnv
+        }
+
     }
 
 function reset(){
@@ -88,6 +184,8 @@ function reset(){
 
     game.scroll = 0
 
+    game.enemies = []
+    game.weapons = []
     game.board = []
     document.querySelector('.bottom').scrollTo(0,0)
 
@@ -112,12 +210,8 @@ function reset(){
                         game.gold -= weapom.coast
                         game.board[y][x] = weapom 
                         const cel = document.querySelector(`#cel-${y}-${x}`)
-                        cel.innerHTML = ''
-                        cel.appendChild(drawWeapom(weapom.id+1,weapom.angle))
-
-                    }
-                    console.log(weapom)
-    
+                        showArm()
+                    }    
                 }
             })
             line.appendChild(cel)
@@ -162,8 +256,8 @@ function reset(){
     }
 
     for(let i=1; i<=50; i++){
-        bottom.appendChild(newSquare(game.enemies[j].name,i))
-        j = j<game.enemies.length-1 ? j+1 : 0
+        bottom.appendChild(newSquare(game.db.enemies[j].name,i))
+        j = j<game.db.enemies.length-1 ? j+1 : 0
     }
     const last_square = newSquare('teste',0)
     last_square.classList.add('last-square')
@@ -179,6 +273,10 @@ function nextLevel(){
         game.scroll = next_level
         score()
     }
+}
+
+function spaw(id_en,qtd,force=1){
+
 }
 
 function score(){
@@ -205,22 +303,22 @@ function showWeapon(wp=0,pos=null){
 
     if(pos==null){
         showArea()
-        console.log(game.weapons[wp])
-        const speed = game.weapons[wp][0].speed
+        console.log(game.db.weapons[wp])
+        const speed = game.db.weapons[wp][0].speed
         const spd_name = speed > 4 ? 'very slow' : speed < 2 ? 'fast' : speed==2 ? 'average' : 'slow' 
         document.querySelector('#panel-2').classList.add('hide')
         document.querySelector('.sell').classList.add('hide')
 
-        document.querySelector('#panel-1').weapom = game.weapons[wp][0]
+        document.querySelector('#panel-1').weapom = game.db.weapons[wp][0]
         document.querySelector('#panel-1').weapom.id  = wp
         document.querySelector('#panel-1').weapom.level = 0
         document.querySelector('#panel-1').weapom.angle = 0
 
-        document.querySelector('#panel-1').querySelector('.title').innerHTML = game.weapons[wp][0].name
-        document.querySelector('#panel-1').querySelector('.about').innerHTML = game.weapons[wp][0].about
-        document.querySelector('#panel-1').querySelector('.coast').innerHTML = game.weapons[wp][0].coast
-        document.querySelector('#panel-1').querySelector('.damage').innerHTML = game.weapons[wp][0].damage
-        document.querySelector('#panel-1').querySelector('.range').innerHTML = game.weapons[wp][0].range
+        document.querySelector('#panel-1').querySelector('.title').innerHTML = game.db.weapons[wp][0].name
+        document.querySelector('#panel-1').querySelector('.about').innerHTML = game.db.weapons[wp][0].about
+        document.querySelector('#panel-1').querySelector('.coast').innerHTML = game.db.weapons[wp][0].coast
+        document.querySelector('#panel-1').querySelector('.damage').innerHTML = game.db.weapons[wp][0].damage
+        document.querySelector('#panel-1').querySelector('.range').innerHTML = game.db.weapons[wp][0].range
         document.querySelector('#panel-1').querySelector('.speed').innerHTML = spd_name
 
     }else{
