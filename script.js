@@ -28,11 +28,56 @@ const game = new Object
         reset()
     }
 
+    function drawWeapom(id_wep,ang){
+
+        const cnv = document.createElement('canvas')
+
+        cnv.width = 100
+        cnv.height = 100
+
+        const base = new Image()
+        base.src = 'assets/w_base.png'
+        base.height = base.width
+
+        const arm = new Image()
+        arm.src = `assets/w${id_wep}_cannon.png`
+
+        const angle = ang +35
+        const offset = 0
+        const l = arm.width
+        const h = arm.height
+        const offset_ang = ((Math.atan2(l/2, h/2) * 180) / Math.PI) + 90
+        const scale =  cnv.width / base.width
+
+        const center = [offset+l/2,offset+h/2]
+        const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
+        const sin = Number((Math.sin(Math.PI/180 * angle)).toFixed(2))
+        const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
+        const cord = [center[0]+raio*cos, center[1]+raio*sin]
+
+//console.log(l,h,base.width,base.height)
+
+        if (cnv.getContext) {
+            ctx = cnv.getContext('2d');
+            ctx.clearRect(0, 0, cnv.width, cnv.height)
+            ctx.save();
+            ctx.scale(scale,scale)
+            ctx.drawImage(base,offset,offset, base.width, base.height)
+            ctx.translate(cord[0]+((base.width-l)/2),cord[1]+((base.height-h)/2));
+            ctx.rotate(Math.PI / 180 * (angle + offset_ang))
+//            ctx.strokeRect(0,0, l, h)
+            ctx.drawImage(arm,0,0, l,h);
+            ctx.restore(); 
+        }
+
+        return cnv
+    }
+
 function reset(){
     game.time = 30
     game.level = 1
     game.lives = 20
-    game.gold = 100
+    game.gold = 1000
     game.score = 0
 
     game.count=0
@@ -43,8 +88,6 @@ function reset(){
 
     game.scroll = 0
 
-//    game.enemies = []
-//    game.weapons = []
     game.board = []
     document.querySelector('.bottom').scrollTo(0,0)
 
@@ -52,54 +95,6 @@ function reset(){
 
     const grid =  document.querySelector('#grid')
     grid.innerHTML = ''
-
-    function drawWeapom(y,x){
-        const wp = game.board[y][x]
-        const cel = document.querySelector(`#cel-${y}-${x}`)
-        cel.innerHTML = ''
-
-        const cnv = document.createElement('canvas')
-        cel.appendChild(cnv)
-        const base = new Image()
-        base.src = 'assets/w_base.png'
-
-        const arm = new Image()
-        arm.src = `assets/w${wp.id+1}_cannon.png`
-
-
-        const angle = 135
-        const w1 = -32
-        const h1 = -105
-
-        if (cnv.getContext) {
-
-            const w = arm.width
-            const h = arm.height
-            
-            cnv.width = w << 1; //double the canvas width
-            cnv.height = h << 1; //double the canvas height
-            const sn = Number(Math.sin(Math.PI / 180 * angle).toFixed(2))
-            const cs = Number(Math.cos(Math.PI / 180 * angle).toFixed(2))
-
-            console.log(w,h,sn,cs)
-
-            ctx = cnv.getContext('2d');
-            ctx.drawImage(base,0,0,cnv.width,cnv.height);
-            ctx.drawImage(arm,0,0,w*2,h*2);
-            ctx.save();
-//            ctx.clearRect(0, 0, cnv.width, cnv.height)
-//            ctx.scale(1, 1);
-//            ctx.translate(arm.width/2 + os_w, arm.height/2 );
-//            ctx.translate(arm.width/2 + 0, arm.height/2 + h/2*Math.abs(cs));
-            ctx.rotate(Math.PI / 180 * angle)
-//            ctx.drawImage(base,0,0,300,300);
-//            ctx.drawImage(arm,-w/2,-h/2,cnv.width,cnv.height);
-            ctx.drawImage(arm,w1,h1,w*2,h*2);
-            ctx.restore();       
-        }
-
-
-    }
 
     for(let y=0; y<10; y++){
         const line = document.createElement('div')
@@ -116,7 +111,10 @@ function reset(){
                     if(game.gold >= weapom.coast){
                         game.gold -= weapom.coast
                         game.board[y][x] = weapom 
-                        drawWeapom(y,x)
+                        const cel = document.querySelector(`#cel-${y}-${x}`)
+                        cel.innerHTML = ''
+                        cel.appendChild(drawWeapom(weapom.id+1,weapom.angle))
+
                     }
                     console.log(weapom)
     

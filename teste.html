@@ -12,7 +12,7 @@
 </head>
 <body>
     
-    <canvas id="cnv" width="300" height="300"></canvas>
+    <canvas id="cnv" width="200" height="200"></canvas>
 
 </body>
 <script>
@@ -69,20 +69,24 @@ function circle(ang){
     }
 }
 
-function drawWeapom( ang){
+function drawWeapom(ang){
 
         const cnv = document.querySelector('#cnv')
         const base = new Image()
         base.src = 'assets/w_base.png'
+
+        base.height = base.width
+
 
         const arm = new Image()
         arm.src = `assets/w1_cannon.png`
 
         const angle = ang +45
         const offset = 0
-        const l = arm.width
-        const h = arm.height
+        const l = arm.width 
+        const h = arm.height 
         const offset_ang = ((Math.atan2(l/2, h/2) * 180) / Math.PI) + 90
+        const scale = cnv.width / base.width
 
         const center = [offset+l/2,offset+h/2]
         const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
@@ -90,13 +94,15 @@ function drawWeapom( ang){
         const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
         const cord = [center[0]+raio*cos, center[1]+raio*sin]
 
-//console.log(l,h,base.width,base.height)
+//console.log(l,h,scale,base.width,base.height,cnv.width,cnv.height )
 
         if (cnv.getContext) {
             ctx = cnv.getContext('2d');
             ctx.clearRect(0, 0, cnv.width, cnv.height)
-            ctx.drawImage(base,offset,offset, base.width, base.height)
+//            ctx.drawImage(base,offset,offset, base.width, base.height)
             ctx.save();
+            ctx.scale(scale,scale)
+            ctx.drawImage(base,offset,offset, base.width, base.height)
             ctx.translate(cord[0]+((base.width-l)/2),cord[1]+((base.height-h)/2));
             ctx.rotate(Math.PI / 180 * (angle + offset_ang))
 //            ctx.strokeRect(0,0, l, h)
