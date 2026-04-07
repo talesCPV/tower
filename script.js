@@ -18,23 +18,23 @@ Enemy.prototype.move = function(){
 
 }
 
-
 class Weapom{
     constructor(id_wep=0,x,y){
         this.id = id_wep
-        this.name = game.db.weapons[id_wep].name
-        this.about = game.db.weapons[id_wep].about
-        this.upgrade = game.db.weapons[id_wep].upgrade
-        this.coast = game.db.weapons[id_wep].coast
-        this.damage = game.db.weapons[id_wep].damage
-        this.speed = game.db.weapons[id_wep].speed
-        this.range = game.db.weapons[id_wep].range
-        this.sell = game.db.weapons[id_wep].sell
+        this.name = game.db.weapons[id_wep][0].name
+        this.about = game.db.weapons[id_wep][0].about
+        this.upgrade = game.db.weapons[id_wep][0].upgrade
+        this.coast = game.db.weapons[id_wep][0].coast
+        this.damage = game.db.weapons[id_wep][0].damage
+        this.speed = game.db.weapons[id_wep][0].speed
+        this.range = game.db.weapons[id_wep][0].range
+        this.sell = game.db.weapons[id_wep][0].sell
+        this.angle = 0
+        this.level = 0
         this.x = x
         this.y = y
     }
 }
-
 
 const game = new Object
 
@@ -69,10 +69,15 @@ const game = new Object
 
     function showArm(){
 
-        function drawWeapom(id_wep,ang){
+        function drawWeapom(wep,i){
+            wep = wep[i]
+            wep.index = i
 
+            const cel = document.querySelector(`#cel-${wep.y}-${wep.x}`)
+            cel.innerHTML = ''
             const cnv = document.createElement('canvas')
-    
+            cel.appendChild(cnv)
+
             cnv.width = 100
             cnv.height = 100
     
@@ -81,9 +86,9 @@ const game = new Object
             base.height = base.width
     
             const arm = new Image()
-            arm.src = `assets/w${id_wep}_cannon.png`
+            arm.src = `assets/w${wep.id+1}_cannon.png`
     
-            const angle = ang +35
+            const angle = wep.angle +35
             const offset = 0
             const l = arm.width
             const h = arm.height
@@ -108,18 +113,25 @@ const game = new Object
                 ctx.restore(); 
             }
     
-            return cnv
+            cnv.addEventListener('click',(e)=>{
+                const parent = e.target.parentNode.parentNode.parentNode
+                parent.classList.remove('arm')
+                showPanel(1,wep)
+                const fullWep = game.db.weapons[wep.id]
+                if(wep.level < fullWep.length-1){
+                    const obj = fullWep[wep.level+1]
+                    obj.x = wep.x
+                    obj.y = wep.y
+                    obj.index = wep.index
+                    showPanel(2,obj)
+                }
+
+//*************************************************** */                
+            })
         }
 
-        for(let y=0; y<game.board.length; y++){
-            for(let x=0; x<game.board[y].length; x++){
-                const cel = document.querySelector(`#cel-${y}-${x}`)
-                cel.innerHTML = ''
-                const wep = game.board[y][x]
-                if(wep.damage){
-                    cel.appendChild(drawWeapom(wep.id+1,wep.angle))    
-                }
-            }
+        for(let i=0; i<game.weapons.length; i++){
+            drawWeapom(game.weapons,i)
         }
     }
 
@@ -204,30 +216,17 @@ function reset(){
             cel.className = 'cel-path'
             cel.id = `cel-${y}-${x}`
             cel.addEventListener('click',(e)=>{
-                if(e.target.parentNode.parentNode.classList.contains('arm') && !game.board[y][x].coast){
-                    const weapom = document.querySelector('#panel-1').weapom
+                if(e.target.parentNode.parentNode.classList.contains('arm') ){
+                    const weapom = document.querySelector('#panel-1').weapom                    
                     if(game.gold >= weapom.coast){
+                        game.weapons.push(new Weapom(weapom.id,x,y))
                         game.gold -= weapom.coast
-                        game.board[y][x] = weapom 
-                        const cel = document.querySelector(`#cel-${y}-${x}`)
                         showArm()
                     }    
                 }
             })
             line.appendChild(cel)
-            const obj = new Object
-            obj.about = ''
-            obj.coast = 0
-            obj.damage = 0
-            obj.id = 0
-            obj.name = ''
-            obj.range = 0
-            obj.sell = 0
-            obj.speed = 0
-            obj.upgrade = ""
-            obj.level = 0
-            obj.angle = 0
-            game.board[game.board.length-1].push(obj)
+
         }
     }
 
@@ -299,11 +298,27 @@ function showArea(set=1){
     }
 }
 
+function showPanel(pnl,obj){
+
+    const speed = obj.speed > 4 ? 'very slow' : obj.speed < 2 ? 'fast' : obj.speed==2 ? 'average' : 'slow'
+
+    document.querySelector(`#panel-${pnl}`).classList.remove('hide')
+    document.querySelector(`#panel-${pnl}`).weapom = obj
+    document.querySelector(`#panel-${pnl}`).querySelector('.btn-upgd').classList.remove('hide')
+
+    document.querySelector(`#panel-${pnl}`).querySelector('.title').innerHTML = obj.name
+    document.querySelector(`#panel-${pnl}`).querySelector('.about').innerHTML = obj.about
+    document.querySelector(`#panel-${pnl}`).querySelector('.coast').innerHTML = obj.coast
+    document.querySelector(`#panel-${pnl}`).querySelector('.damage').innerHTML = obj.damage
+    document.querySelector(`#panel-${pnl}`).querySelector('.range').innerHTML = obj.range
+    document.querySelector(`#panel-${pnl}`).querySelector('.speed').innerHTML = speed
+    document.querySelector(`#panel-${pnl}`).querySelector('.btn-upgd').innerHTML = pnl==1 ? `Sell for ${obj.sell}` : 'Upgrade'
+}
+
 function showWeapon(wp=0,pos=null){    
 
     if(pos==null){
         showArea()
-        console.log(game.db.weapons[wp])
         const speed = game.db.weapons[wp][0].speed
         const spd_name = speed > 4 ? 'very slow' : speed < 2 ? 'fast' : speed==2 ? 'average' : 'slow' 
         document.querySelector('#panel-2').classList.add('hide')
@@ -328,6 +343,7 @@ function showWeapon(wp=0,pos=null){
 
 }
 
+
 document.querySelector('#btn-start').addEventListener('click',()=>{
     game.pause = !game.pause
     document.querySelector('#btn-start').innerHTML = game.pause ? 'START' : 'PAUSE'
@@ -339,6 +355,29 @@ document.querySelector('#btn-reset').addEventListener('click',()=>{
 
 document.querySelector('#btn-next').addEventListener('click',()=>{
     nextLevel()
+})
+
+document.querySelector('.sell').addEventListener('click',(e)=>{
+    if(confirm('Do you really wanna sell it?')){
+        const wep = e.target.parentNode.weapom
+        console.log(wep)
+        game.gold += wep.sell
+        game.weapons.splice(wep.index,1) 
+        document.querySelector(`#cel-${wep.y}-${wep.x}`).innerHTML = ''
+        showArm()
+    }
+})
+
+document.querySelector('.buy').addEventListener('click',(e)=>{
+    const wep = e.target.parentNode.weapom    
+    wep.id = game.weapons[wep.index].id
+    wep.angle = game.weapons[wep.index].angle
+    wep.level = game.weapons[wep.index].level+1
+
+    game.gold -= wep.coast
+    game.weapons[wep.index] = wep
+    showArm()
+
 })
 
 document.querySelector('#btn-grid').addEventListener('click',()=>{
