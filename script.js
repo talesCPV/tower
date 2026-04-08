@@ -119,15 +119,8 @@ const game = new Object
                 const parent = cel.parentNode.parentNode
                 parent.classList.remove('arm')
                 showRange(cel)
-                showPanel(1,wep)
-                const fullWep = game.db.weapons[wep.id]
-                if(wep.level < fullWep.length-1){
-                    const obj = fullWep[wep.level+1]
-                    obj.x = wep.x
-                    obj.y = wep.y
-                    obj.index = wep.index
-                    showPanel(2,obj)
-                }
+                showPanel(1,wep.index)
+                showPanel(2,wep.index)
 
 //*************************************************** */                
             })
@@ -312,21 +305,30 @@ function showArea(set=1){
     }
 }
 
-function showPanel(pnl,obj){
+function showPanel(pnl,i){
 
-    const speed = obj.speed > 4 ? 'very slow' : obj.speed < 2 ? 'fast' : obj.speed==2 ? 'average' : 'slow'
+    console.log(game.weapons[i])
 
-    document.querySelector(`#panel-${pnl}`).classList.remove('hide')
-    document.querySelector(`#panel-${pnl}`).weapom = obj
-    document.querySelector(`#panel-${pnl}`).querySelector('.btn-upgd').classList.remove('hide')
+    const obj = pnl == 1 ? game.weapons[i] : game.db.weapons[game.weapons[i].id][game.weapons[i].level+1]
+    if(obj != undefined){
+        const speed = obj.speed > 4 ? 'very slow' : obj.speed < 2 ? 'fast' : obj.speed==2 ? 'average' : 'slow'
 
-    document.querySelector(`#panel-${pnl}`).querySelector('.title').innerHTML = obj.name
-    document.querySelector(`#panel-${pnl}`).querySelector('.about').innerHTML = obj.about
-    document.querySelector(`#panel-${pnl}`).querySelector('.coast').innerHTML = obj.coast
-    document.querySelector(`#panel-${pnl}`).querySelector('.damage').innerHTML = obj.damage
-    document.querySelector(`#panel-${pnl}`).querySelector('.range').innerHTML = obj.range
-    document.querySelector(`#panel-${pnl}`).querySelector('.speed').innerHTML = speed
-    document.querySelector(`#panel-${pnl}`).querySelector('.btn-upgd').innerHTML = pnl==1 ? `Sell for ${obj.sell}` : 'Upgrade'
+        document.querySelector(`#panel-${pnl}`).classList.remove('hide')
+        document.querySelector(`#panel-${pnl}`).weapom = obj
+        document.querySelector(`#panel-${pnl}`).querySelector('.btn-upgd').classList.remove('hide')
+    
+        document.querySelector(`#panel-${pnl}`).querySelector('.title').innerHTML = obj.name
+        document.querySelector(`#panel-${pnl}`).querySelector('.about').innerHTML = obj.about
+        document.querySelector(`#panel-${pnl}`).querySelector('.coast').innerHTML = obj.coast
+        document.querySelector(`#panel-${pnl}`).querySelector('.damage').innerHTML = obj.damage
+        document.querySelector(`#panel-${pnl}`).querySelector('.range').innerHTML = obj.range
+        document.querySelector(`#panel-${pnl}`).querySelector('.speed').innerHTML = speed
+        document.querySelector(`#panel-${pnl}`).querySelector('.btn-upgd').innerHTML = pnl==1 ? `Sell for ${obj.sell}` : 'Upgrade'
+    }else{
+        document.querySelector(`#panel-${pnl}`).classList.add('hide')
+    }
+
+
 }
 
 function showWeapon(wp=0,pos=null){    
@@ -374,7 +376,6 @@ document.querySelector('#btn-next').addEventListener('click',()=>{
 document.querySelector('.sell').addEventListener('click',(e)=>{
     if(confirm('Do you really wanna sell it?')){
         const wep = e.target.parentNode.weapom
-        console.log(wep)
         game.gold += wep.sell
         game.weapons.splice(wep.index,1) 
         document.querySelector(`#cel-${wep.y}-${wep.x}`).innerHTML = ''
@@ -383,14 +384,27 @@ document.querySelector('.sell').addEventListener('click',(e)=>{
 })
 
 document.querySelector('.buy').addEventListener('click',(e)=>{
-    const wep = e.target.parentNode.weapom    
-    wep.id = game.weapons[wep.index].id
-    wep.angle = game.weapons[wep.index].angle
-    wep.level = game.weapons[wep.index].level+1
+    
+    const wep = e.target.parentNode.weapom
+    const cel = document.querySelector('.raio').weapom
 
-    game.gold -= wep.coast
-    game.weapons[wep.index] = wep
-    showArm()
+    if(game.gold >= wep.coast){
+
+        const obj = game.weapons[cel.index]
+        game.gold -= wep.coast
+
+        obj.coast = wep.coast
+        obj.range = wep.range
+        obj.damage = wep.damage
+        obj.sell = wep.sell
+        obj.speed = wep.speed
+        obj.level++
+        showPanel(1,cel.index)
+        showPanel(2,cel.index)
+        showArm()
+    }
+
+
 
 })
 
