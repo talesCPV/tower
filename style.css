@@ -3,6 +3,10 @@
         src: url(assets/fonts/Roboto-Medium.ttf);
     }
 
+    :root{
+        --range:150px
+    }
+
 
     body{
         display: flex;
@@ -308,6 +312,19 @@
         min-width: 420px;
         background: unset;
     }
+
+
+    .raio::after{
+        content: "";
+        width: var(--range);
+        height: var(--range);
+        background-color: #00000036;
+        z-index: -1;
+        position: absolute;
+        border-radius: 50%;
+    }
+
+/* ENEMIES*/
 
     .NORMAL{
         background-color: #222;

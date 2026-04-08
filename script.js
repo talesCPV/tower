@@ -75,6 +75,7 @@ const game = new Object
 
             const cel = document.querySelector(`#cel-${wep.y}-${wep.x}`)
             cel.innerHTML = ''
+            cel.weapom = wep
             const cnv = document.createElement('canvas')
             cel.appendChild(cnv)
 
@@ -114,8 +115,10 @@ const game = new Object
             }
     
             cnv.addEventListener('click',(e)=>{
-                const parent = e.target.parentNode.parentNode.parentNode
+//                const cel = e.target.parentNode
+                const parent = cel.parentNode.parentNode
                 parent.classList.remove('arm')
+                showRange(cel)
                 showPanel(1,wep)
                 const fullWep = game.db.weapons[wep.id]
                 if(wep.level < fullWep.length-1){
@@ -132,6 +135,17 @@ const game = new Object
 
         for(let i=0; i<game.weapons.length; i++){
             drawWeapom(game.weapons,i)
+        }
+    }
+
+    function showRange(cel=null){
+        const range = document.querySelectorAll('.raio')
+        for(let i=0; i<range.length; i++){
+            range[i].classList.remove('raio')
+        }
+        if(cel!=null){
+            document.documentElement.style.setProperty('--range', `${cel.weapom.range*2.5}px`);
+            cel.classList.add('raio')
         }
     }
 
@@ -316,7 +330,7 @@ function showPanel(pnl,obj){
 }
 
 function showWeapon(wp=0,pos=null){    
-
+    showRange()
     if(pos==null){
         showArea()
         const speed = game.db.weapons[wp][0].speed
