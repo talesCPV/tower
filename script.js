@@ -115,10 +115,8 @@ const game = new Object
             }
     
             cnv.addEventListener('click',(e)=>{
-//                const cel = e.target.parentNode
                 const parent = cel.parentNode.parentNode
                 parent.classList.remove('arm')
-                showRange(cel)
                 showPanel(1,wep.index)
                 showPanel(2,wep.index)
 
@@ -307,8 +305,6 @@ function showArea(set=1){
 
 function showPanel(pnl,i){
 
-    console.log(game.weapons[i])
-
     const obj = pnl == 1 ? game.weapons[i] : game.db.weapons[game.weapons[i].id][game.weapons[i].level+1]
     if(obj != undefined){
         const speed = obj.speed > 4 ? 'very slow' : obj.speed < 2 ? 'fast' : obj.speed==2 ? 'average' : 'slow'
@@ -324,10 +320,13 @@ function showPanel(pnl,i){
         document.querySelector(`#panel-${pnl}`).querySelector('.range').innerHTML = obj.range
         document.querySelector(`#panel-${pnl}`).querySelector('.speed').innerHTML = speed
         document.querySelector(`#panel-${pnl}`).querySelector('.btn-upgd').innerHTML = pnl==1 ? `Sell for ${obj.sell}` : 'Upgrade'
+
+        const cel = document.querySelector(`#cel-${game.weapons[i].y}-${game.weapons[i].x}`)
+        showRange(cel)
+    
     }else{
         document.querySelector(`#panel-${pnl}`).classList.add('hide')
     }
-
 
 }
 
@@ -351,14 +350,12 @@ function showWeapon(wp=0,pos=null){
         document.querySelector('#panel-1').querySelector('.damage').innerHTML = game.db.weapons[wp][0].damage
         document.querySelector('#panel-1').querySelector('.range').innerHTML = game.db.weapons[wp][0].range
         document.querySelector('#panel-1').querySelector('.speed').innerHTML = spd_name
-
     }else{
         document.querySelector('.sell').classList.remove('hide')
         document.querySelector('#panel-2').classList.remove('hide')
     }    
 
 }
-
 
 document.querySelector('#btn-start').addEventListener('click',()=>{
     game.pause = !game.pause
@@ -404,8 +401,6 @@ document.querySelector('.buy').addEventListener('click',(e)=>{
         showArm()
     }
 
-
-
 })
 
 document.querySelector('#btn-grid').addEventListener('click',()=>{
@@ -419,16 +414,41 @@ document.querySelector('#btn-grid').addEventListener('click',()=>{
     }
 })
 
-/*
-document.querySelector('#grid').addEventListener('mousemove',(e)=>{
+function ghost(pos){
+    console.log(pos)
+
+    const cnv = document.querySelector('#war-field')
+    if (cnv.getContext) {
+        ctx = cnv.getContext('2d');
+        ctx.clearRect(0, 0, cnv.width, cnv.height)
+        ctx.save();
+//        ctx.scale(scale,scale)
+//        ctx.drawImage(base,offset,offset, base.width, base.height)
+        ctx.strokeRect(0,0, 100, 100)
+//        ctx.translate(cord[0]+((base.width-l)/2),cord[1]+((base.height-h)/2));
+//        ctx.rotate(Math.PI / 180 * (angle + offset_ang))
+//        ctx.drawImage(arm,0,0, l,h);
+        ctx.restore(); 
+    }
+
+
+}
+
+
+//document.querySelector('#war-field').addEventListener('mousemove',(e)=>{
+document.querySelector('#war-field').addEventListener('click',(e)=>{
     const bounds = e.target.getBoundingClientRect();
-    const x = Math.floor((e.x - Math.floor(bounds.left) -15)/25.6)
-    const y = Math.floor((e.y - Math.floor(bounds.top)  -15)/25.6)
-    if(x>=0 && x<13 && y>=0 && y<10){
-        console.log(x,y)
+
+    const x = Math.floor((e.x - Math.floor(bounds.left) )) -44
+    const y = Math.floor((e.y - Math.floor(bounds.top))) -36
+    if(x>=0 && x<332&& y>=0 && y<288){
+        const grid = document.querySelector('#grid')
+        const pos = [Math.floor(x/(grid.clientWidth/26)),Math.floor(y/(grid.clientHeight/20))]
+
+        ghost(pos)
 
     }
 })
-*/
+
 
     loadData()

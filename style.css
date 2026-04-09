@@ -54,6 +54,7 @@
     }
 
     .field{
+        position: relative;
         height: 80%;
         display: flex;
         justify-content: center;
@@ -61,9 +62,14 @@
     }
 
     #grid{
+        position: absolute;
         width: 79.16%;
         height: 80%;
         border: 15px solid #ffffff00;
+    }
+
+    #war-field{
+        z-index: 10;
     }
 
     .grid{       
