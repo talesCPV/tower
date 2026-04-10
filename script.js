@@ -208,15 +208,20 @@ function reset(){
 
     score()
 
-    const grid =  document.querySelector('#grid')
-    grid.innerHTML = ''
+//    const grid =  document.querySelector('#grid')
+//    grid.innerHTML = ''
 
-    for(let y=0; y<10; y++){
-        const line = document.createElement('div')
-        line.className = 'line-path'
-        grid.appendChild(line)
+    for(let y=0; y<20; y++){
+//        const line = document.createElement('div')
+//        line.className = 'line-path'
+//        grid.appendChild(line)
         game.board.push([])
-        for(let x=0; x<13; x++){
+        for(let x=0; x<26; x++){
+            const obj = new Object
+            obj.id = -1
+            obj.pivot = [0,0]
+            game.board[game.board.length-1].push(obj)
+/*            
             const cel = document.createElement('div')
             cel.className = 'cel-path'
             cel.id = `cel-${y}-${x}`
@@ -231,7 +236,7 @@ function reset(){
                 }
             })
             line.appendChild(cel)
-
+*/
         }
     }
 
@@ -297,9 +302,9 @@ function score(){
 
 function showArea(set=1){
     if(set){
-        document.querySelector('#grid').classList.add('arm')
+        document.querySelector('#war-field').classList.add('hide')
     }else{
-        document.querySelector('#grid').classList.remove('arm')
+        document.querySelector('#war-field').classList.remove('hide')
     }
 }
 
@@ -414,41 +419,61 @@ document.querySelector('#btn-grid').addEventListener('click',()=>{
     }
 })
 
-function ghost(pos){
-    console.log(pos)
-
-    const cnv = document.querySelector('#war-field')
-    if (cnv.getContext) {
-        ctx = cnv.getContext('2d');
-        ctx.clearRect(0, 0, cnv.width, cnv.height)
-        ctx.save();
-//        ctx.scale(scale,scale)
-//        ctx.drawImage(base,offset,offset, base.width, base.height)
-        ctx.strokeRect(0,0, 100, 100)
-//        ctx.translate(cord[0]+((base.width-l)/2),cord[1]+((base.height-h)/2));
-//        ctx.rotate(Math.PI / 180 * (angle + offset_ang))
-//        ctx.drawImage(arm,0,0, l,h);
-        ctx.restore(); 
+function ghost(obj){
+console.log(obj)
+    if(obj){
+        const cnv = document.querySelector('#arm')
+console.log(cnv)        
+        if (cnv.getContext) {
+            ctx = cnv.getContext('2d');
+            ctx.clearRect(0, 0, cnv.width, cnv.height)
+            ctx.save();
+    //        ctx.scale(scale,scale)
+    //        ctx.drawImage(base,offset,offset, base.width, base.height)
+//            ctx.strokeRect(obj.offset[0]+ obj.square[0]* obj.pos[0]/2,obj.offset[1] + obj.square[1] * obj.pos[1]/2, obj.square[0], obj.square[1])
+            ctx.strokeRect(0,0,cnv.width,cnv.height)
+    //        ctx.translate(cord[0]+((base.width-l)/2),cord[1]+((base.height-h)/2));
+    //        ctx.rotate(Math.PI / 180 * (angle + offset_ang))
+    //        ctx.drawImage(arm,0,0, l,h);
+            ctx.restore(); 
+        }
     }
+}
 
+function getPosition(e){
+    const obj = new Object
+    const bounds = e.target.getBoundingClientRect();
+    
+    const square = [bounds.width/13,bounds.height/10]
 
+    console.log(bounds)
+    console.log(e.x)
+    const arm = document.querySelector('#arm')
+    console.log(arm)
+
+    obj.x = Math.floor((e.x - Math.floor(arm.clientWidth) )) 
+    obj.y = Math.floor((e.y - Math.floor(arm.clientHeight))) 
+    obj.pos = [Math.floor(obj.x/(arm.clientWidth/26)),Math.floor(obj.y/(arm.clientHeight/20))]
+    console.log(obj, square)
+    if(obj.x>=0 && obj.x<314 && obj.y>=0 && obj.y<270){
+        return obj
+    }
+    return 0
 }
 
 
-//document.querySelector('#war-field').addEventListener('mousemove',(e)=>{
-document.querySelector('#war-field').addEventListener('click',(e)=>{
-    const bounds = e.target.getBoundingClientRect();
-
-    const x = Math.floor((e.x - Math.floor(bounds.left) )) -44
-    const y = Math.floor((e.y - Math.floor(bounds.top))) -36
-    if(x>=0 && x<332&& y>=0 && y<288){
-        const grid = document.querySelector('#grid')
-        const pos = [Math.floor(x/(grid.clientWidth/26)),Math.floor(y/(grid.clientHeight/20))]
-
-        ghost(pos)
-
-    }
+document.querySelector('#arm').addEventListener('mousemove',(e)=>{
+//    console.log(e)
+//document.querySelector('#war-field').addEventListener('click',(e)=>{
+//    ghost(getPosition(e))
 })
 
+document.querySelector('#arm').addEventListener('click',(e)=>{
 
-    loadData()
+    const pos = getPosition(e)
+    console.log(pos)
+    
+
+})
+
+loadData()
