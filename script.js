@@ -208,35 +208,13 @@ function reset(){
 
     score()
 
-//    const grid =  document.querySelector('#grid')
-//    grid.innerHTML = ''
-
     for(let y=0; y<20; y++){
-//        const line = document.createElement('div')
-//        line.className = 'line-path'
-//        grid.appendChild(line)
         game.board.push([])
         for(let x=0; x<26; x++){
             const obj = new Object
             obj.id = -1
             obj.pivot = [0,0]
             game.board[game.board.length-1].push(obj)
-/*            
-            const cel = document.createElement('div')
-            cel.className = 'cel-path'
-            cel.id = `cel-${y}-${x}`
-            cel.addEventListener('click',(e)=>{
-                if(e.target.parentNode.parentNode.classList.contains('arm') ){
-                    const weapom = document.querySelector('#panel-1').weapom                    
-                    if(game.gold >= weapom.coast){
-                        game.weapons.push(new Weapom(weapom.id,x,y))
-                        game.gold -= weapom.coast
-                        showArm()
-                    }    
-                }
-            })
-            line.appendChild(cel)
-*/
         }
     }
 
@@ -300,14 +278,6 @@ function score(){
 
 }
 
-function showArea(set=1){
-    if(set){
-        document.querySelector('#war-field').classList.add('hide')
-    }else{
-        document.querySelector('#war-field').classList.remove('hide')
-    }
-}
-
 function showPanel(pnl,i){
 
     const obj = pnl == 1 ? game.weapons[i] : game.db.weapons[game.weapons[i].id][game.weapons[i].level+1]
@@ -338,11 +308,11 @@ function showPanel(pnl,i){
 function showWeapon(wp=0,pos=null){    
     showRange()
     if(pos==null){
-        showArea()
         const speed = game.db.weapons[wp][0].speed
         const spd_name = speed > 4 ? 'very slow' : speed < 2 ? 'fast' : speed==2 ? 'average' : 'slow' 
         document.querySelector('#panel-2').classList.add('hide')
         document.querySelector('.sell').classList.add('hide')
+        document.querySelector('#arm').classList.remove('hide')
 
         document.querySelector('#panel-1').weapom = game.db.weapons[wp][0]
         document.querySelector('#panel-1').weapom.id  = wp
@@ -358,6 +328,8 @@ function showWeapon(wp=0,pos=null){
     }else{
         document.querySelector('.sell').classList.remove('hide')
         document.querySelector('#panel-2').classList.remove('hide')
+        document.querySelector('#arm').classList.add('hide')
+
     }    
 
 }
@@ -420,10 +392,10 @@ document.querySelector('#btn-grid').addEventListener('click',()=>{
 })
 
 function ghost(obj){
-console.log(obj)
     if(obj){
         const cnv = document.querySelector('#arm')
-console.log(cnv)        
+        const square = [cnv.width/13,cnv.height/10]
+        const pos = [square[0]/2*obj.pos[0],square[1]/2*obj.pos[1]]
         if (cnv.getContext) {
             ctx = cnv.getContext('2d');
             ctx.clearRect(0, 0, cnv.width, cnv.height)
@@ -431,7 +403,9 @@ console.log(cnv)
     //        ctx.scale(scale,scale)
     //        ctx.drawImage(base,offset,offset, base.width, base.height)
 //            ctx.strokeRect(obj.offset[0]+ obj.square[0]* obj.pos[0]/2,obj.offset[1] + obj.square[1] * obj.pos[1]/2, obj.square[0], obj.square[1])
-            ctx.strokeRect(0,0,cnv.width,cnv.height)
+//            ctx.strokeRect(pos[0],pos[1],square[0],square[1])
+            ctx.fillStyle = '#76fb096f';
+            ctx.fillRect(pos[0],pos[1],square[0],square[1])
     //        ctx.translate(cord[0]+((base.width-l)/2),cord[1]+((base.height-h)/2));
     //        ctx.rotate(Math.PI / 180 * (angle + offset_ang))
     //        ctx.drawImage(arm,0,0, l,h);
@@ -442,20 +416,15 @@ console.log(cnv)
 
 function getPosition(e){
     const obj = new Object
-    const bounds = e.target.getBoundingClientRect();
-    
-    const square = [bounds.width/13,bounds.height/10]
-
-    console.log(bounds)
-    console.log(e.x)
     const arm = document.querySelector('#arm')
-    console.log(arm)
-
-    obj.x = Math.floor((e.x - Math.floor(arm.clientWidth) )) 
-    obj.y = Math.floor((e.y - Math.floor(arm.clientHeight))) 
+    const bounds = e.target.getBoundingClientRect();
+    obj.x = Math.floor((e.x - Math.floor(bounds.left) )) 
+    obj.y = Math.floor((e.y - Math.floor(bounds.top))) 
     obj.pos = [Math.floor(obj.x/(arm.clientWidth/26)),Math.floor(obj.y/(arm.clientHeight/20))]
-    console.log(obj, square)
-    if(obj.x>=0 && obj.x<314 && obj.y>=0 && obj.y<270){
+    obj.pos[0] = obj.pos[0]>24 ? 24 : obj.pos[0]
+    obj.pos[1] = obj.pos[1]>18 ? 18 : obj.pos[1]
+    obj.fill = [[obj.pos[0],obj.pos[1]],[obj.pos[0],obj.pos[1]+1],[obj.pos[0]+1,obj.pos[1]],[obj.pos[0]+1,obj.pos[1]+1]]
+    if(obj.x>=0 && obj.x<arm.offsetWidth && obj.y>=0 && obj.y<arm.offsetHeight){
         return obj
     }
     return 0
@@ -465,15 +434,15 @@ function getPosition(e){
 document.querySelector('#arm').addEventListener('mousemove',(e)=>{
 //    console.log(e)
 //document.querySelector('#war-field').addEventListener('click',(e)=>{
-//    ghost(getPosition(e))
+    ghost(getPosition(e))
 })
 
 document.querySelector('#arm').addEventListener('click',(e)=>{
-
     const pos = getPosition(e)
     console.log(pos)
-    
+    document.querySelector('#arm').classList.add('hide')
 
+//    showWeapon()
 })
 
 loadData()
