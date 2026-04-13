@@ -213,7 +213,9 @@ function reset(){
         for(let x=0; x<26; x++){
             const obj = new Object
             obj.id = -1
+            obj.level = 0
             obj.pivot = [0,0]
+            obj.index = -1
             game.board[game.board.length-1].push(obj)
         }
     }
@@ -380,6 +382,33 @@ document.querySelector('.buy').addEventListener('click',(e)=>{
 
 })
 
+function buy(obj){
+    const wep = new Object
+    wep.id = document.querySelector('#panel-1').weapom.id
+
+    wep.pivot = [obj.fill[0][1],obj.fill[0][0]]
+    wep.pivot[0] -= game.board[obj.fill[0][1]][obj.fill[0][0]].pivot[0] 
+    wep.pivot[1] -= game.board[obj.fill[0][1]][obj.fill[0][0]].pivot[1] 
+    const cel = game.board[wep.pivot[0]][wep.pivot[1]]
+    wep.level = cel.level
+    wep.next_level = wep.level+1 > game.db.weapons[wep.id].length ? 0 : wep.level+1
+
+    if(wep.next_level){
+        const next_wep = game.db.weapons[wep.id][wep.level]
+        if(game.gold >= next_wep.coast){
+            game.gold -= next_wep.coast
+            for(let i=0; i<4; i++){
+                const cel = game.board[wep.pivot[0]+(i%2)][wep.pivot[1]+(i<2?0:1)]
+                cel.id = wep.id
+                cel.level = wep.next_level
+                cel.pivot = [i%2,i<2?0:1]
+                cel.index = wep.level ? cel.index : game.weapons.length                
+            }
+            !wep.level ? game.weapons.push(wep) : console.log('update')
+        }
+    }
+}
+
 document.querySelector('#btn-grid').addEventListener('click',()=>{
     game.grid = !game.grid
     if(game.grid){
@@ -395,20 +424,13 @@ function ghost(obj){
     if(obj){
         const cnv = document.querySelector('#arm')
         const square = [cnv.width/13,cnv.height/10]
-        const pos = [square[0]/2*obj.pos[0],square[1]/2*obj.pos[1]]
+        const pos = [square[0]/2*obj.fill[0][0],square[1]/2*obj.fill[0][1]]
         if (cnv.getContext) {
             ctx = cnv.getContext('2d');
             ctx.clearRect(0, 0, cnv.width, cnv.height)
             ctx.save();
-    //        ctx.scale(scale,scale)
-    //        ctx.drawImage(base,offset,offset, base.width, base.height)
-//            ctx.strokeRect(obj.offset[0]+ obj.square[0]* obj.pos[0]/2,obj.offset[1] + obj.square[1] * obj.pos[1]/2, obj.square[0], obj.square[1])
-//            ctx.strokeRect(pos[0],pos[1],square[0],square[1])
             ctx.fillStyle = '#76fb096f';
             ctx.fillRect(pos[0],pos[1],square[0],square[1])
-    //        ctx.translate(cord[0]+((base.width-l)/2),cord[1]+((base.height-h)/2));
-    //        ctx.rotate(Math.PI / 180 * (angle + offset_ang))
-    //        ctx.drawImage(arm,0,0, l,h);
             ctx.restore(); 
         }
     }
@@ -420,26 +442,23 @@ function getPosition(e){
     const bounds = e.target.getBoundingClientRect();
     obj.x = Math.floor((e.x - Math.floor(bounds.left) )) 
     obj.y = Math.floor((e.y - Math.floor(bounds.top))) 
-    obj.pos = [Math.floor(obj.x/(arm.clientWidth/26)),Math.floor(obj.y/(arm.clientHeight/20))]
-    obj.pos[0] = obj.pos[0]>24 ? 24 : obj.pos[0]
-    obj.pos[1] = obj.pos[1]>18 ? 18 : obj.pos[1]
-    obj.fill = [[obj.pos[0],obj.pos[1]],[obj.pos[0],obj.pos[1]+1],[obj.pos[0]+1,obj.pos[1]],[obj.pos[0]+1,obj.pos[1]+1]]
+    let pos = [Math.floor(obj.x/(arm.clientWidth/26)),Math.floor(obj.y/(arm.clientHeight/20))]
+    pos[0] = pos[0]>24 ? 24 : pos[0]
+    pos[1] = pos[1]>18 ? 18 : pos[1]
+    obj.fill = [[pos[0],pos[1]],[pos[0],pos[1]+1],[pos[0]+1,pos[1]],[pos[0]+1,pos[1]+1]]
     if(obj.x>=0 && obj.x<arm.offsetWidth && obj.y>=0 && obj.y<arm.offsetHeight){
         return obj
     }
     return 0
 }
 
-
 document.querySelector('#arm').addEventListener('mousemove',(e)=>{
-//    console.log(e)
-//document.querySelector('#war-field').addEventListener('click',(e)=>{
     ghost(getPosition(e))
 })
 
 document.querySelector('#arm').addEventListener('click',(e)=>{
     const pos = getPosition(e)
-    console.log(pos)
+    buy(pos)
     document.querySelector('#arm').classList.add('hide')
 
 //    showWeapon()
