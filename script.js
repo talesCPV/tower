@@ -68,67 +68,65 @@ const game = new Object
     }
 
     function showArm(){
+        const cnv = document.querySelector('#war-field')
+        function drawWeapom(wep){
 
-        function drawWeapom(wep,i){
-            wep = wep[i]
-            wep.index = i
+            console.log(wep)
 
-            const cel = document.querySelector(`#cel-${wep.y}-${wep.x}`)
-            cel.innerHTML = ''
-            cel.weapom = wep
-            const cnv = document.createElement('canvas')
-            cel.appendChild(cnv)
-
-            cnv.width = 100
-            cnv.height = 100
-    
             const base = new Image()
             base.src = 'assets/w_base.png'
             base.height = base.width
     
             const arm = new Image()
             arm.src = `assets/w${wep.id+1}_cannon.png`
-    
-            const angle = wep.angle +35
-            const offset = 0
-            const l = arm.width
-            const h = arm.height
-            const offset_ang = ((Math.atan2(l/2, h/2) * 180) / Math.PI) + 90
-            const scale =  cnv.width / base.width
-    
-            const center = [offset+l/2,offset+h/2]
+
+            const scale =  [cnv.width/13,cnv.height/10]
+            const offset = [(scale[1]/2) * wep.pivot[0],(scale[0]/2) * wep.pivot[1]]
+
+            const l = scale[0]*0.7
+            const h = scale[1]*0.5
+            const angle = wep.angle + 90
+//            const offset_ang = ((Math.atan2(l/2, h/2) * 180) / Math.PI) + 90
+
+            const center = [offset[1]+scale[0]/2,offset[0]+scale[1]/2]
             const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
             const sin = Number((Math.sin(Math.PI/180 * angle)).toFixed(2))
             const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
             const cord = [center[0]+raio*cos, center[1]+raio*sin]
-    
+
+            console.log(angle,cord)
+
+
             if (cnv.getContext) {
                 ctx = cnv.getContext('2d');
-                ctx.clearRect(0, 0, cnv.width, cnv.height)
+//                ctx.clearRect(0, 0, cnv.width, cnv.height)
                 ctx.save();
-                ctx.scale(scale,scale)
-                ctx.drawImage(base,offset,offset, base.width, base.height)
-                ctx.translate(cord[0]+((base.width-l)/2),cord[1]+((base.height-h)/2));
-                ctx.rotate(Math.PI / 180 * (angle + offset_ang))
-                ctx.drawImage(arm,0,0, l,h);
+                ctx.drawImage(base,offset[1],offset[0], scale[0], scale[1])
+                  ctx.translate(cord[0],cord[1]);
+//                  ctx.translate(offset[1]+4,offset[0]+4);
+//                ctx.rotate(Math.PI / 180 * (angle + offset_ang))
+//                ctx.rotate(Math.PI / 180 * (90))
+//                ctx.translate(offset[1]-4,offset[0]-4);
+                //                ctx.drawImage(arm,offset[1]+4,offset[0]+4, l, h);
+                ctx.drawImage(arm,0,0, l, h);
                 ctx.restore(); 
-            }
-    
-            cnv.addEventListener('click',(e)=>{
-                const parent = cel.parentNode.parentNode
-                parent.classList.remove('arm')
-                showPanel(1,wep.index)
-                showPanel(2,wep.index)
 
-//*************************************************** */                
-            })
+// PONTEIRO
+                ctx.beginPath()
+                ctx.moveTo(center[0], center[1])
+                ctx.lineTo(cord[0], cord[1])
+                ctx.stroke()                
+
+            }
+
+          
         }
 
         for(let i=0; i<game.weapons.length; i++){
-            drawWeapom(game.weapons,i)
+            drawWeapom(game.weapons[i])
         }
     }
-
+/*
     function showRange(cel=null){
         const range = document.querySelectorAll('.raio')
         for(let i=0; i<range.length; i++){
@@ -139,7 +137,8 @@ const game = new Object
             cel.classList.add('raio')
         }
     }
-
+*/
+/*
     function showEnemies(){
 
         function drawEnemy(id_enemy){
@@ -185,7 +184,7 @@ const game = new Object
         }
 
     }
-
+*/
 function reset(){
     game.time = 30
     game.level = 1
@@ -298,8 +297,8 @@ function showPanel(pnl,i){
         document.querySelector(`#panel-${pnl}`).querySelector('.speed').innerHTML = speed
         document.querySelector(`#panel-${pnl}`).querySelector('.btn-upgd').innerHTML = pnl==1 ? `Sell for ${obj.sell}` : 'Upgrade'
 
-        const cel = document.querySelector(`#cel-${game.weapons[i].y}-${game.weapons[i].x}`)
-        showRange(cel)
+//        const cel = document.querySelector(`#cel-${game.weapons[i].y}-${game.weapons[i].x}`)
+//        showRange(cel)
     
     }else{
         document.querySelector(`#panel-${pnl}`).classList.add('hide')
@@ -308,7 +307,7 @@ function showPanel(pnl,i){
 }
 
 function showWeapon(wp=0,pos=null){    
-    showRange()
+//    showRange()
     if(pos==null){
         const speed = game.db.weapons[wp][0].speed
         const spd_name = speed > 4 ? 'very slow' : speed < 2 ? 'fast' : speed==2 ? 'average' : 'slow' 
@@ -392,6 +391,8 @@ function buy(obj){
     const cel = game.board[wep.pivot[0]][wep.pivot[1]]
     wep.level = cel.level
     wep.next_level = wep.level+1 > game.db.weapons[wep.id].length ? 0 : wep.level+1
+    wep.angle = 0
+
 
     if(wep.next_level){
         const next_wep = game.db.weapons[wep.id][wep.level]
@@ -405,6 +406,8 @@ function buy(obj){
                 cel.index = wep.level ? cel.index : game.weapons.length                
             }
             !wep.level ? game.weapons.push(wep) : console.log('update')
+                showArm()
+
         }
     }
 }

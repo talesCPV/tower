@@ -24,7 +24,7 @@ let a = 0
 
 const myInterval = setInterval(() => {
     a++
-    drawWeapom(a)
+    circle(a)
 }, 10);
 
 circle(10)
@@ -33,7 +33,7 @@ drawWeapom(10)
 function circle(ang){
 
     const angle = ang +45
-    const offset = 0
+    const offset = 50
     const l = 50
     const h = 50
     const offset_ang = ((Math.atan2(l/2, h/2) * 180) / Math.PI) + 90
@@ -59,13 +59,13 @@ function circle(ang){
         ctx.strokeRect(0,0, l, h)
         ctx.restore(); 
 
-/*
+
 // PONTEIRO
         ctx.beginPath()
         ctx.moveTo(center[0], center[1])
         ctx.lineTo(cord[0], cord[1])
         ctx.stroke()
-*/
+
     }
 }
 
