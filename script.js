@@ -357,8 +357,8 @@ document.querySelector('.sell').addEventListener('click',(e)=>{
 
 document.querySelector('.buy').addEventListener('click',(e)=>{
     const wep = e.target.parentNode.weapom
-    const cel = document.querySelector('.raio').weapom
-    console.log(cel)
+//    const cel = document.querySelector('.raio').weapom
+    console.log(wep)
 
 /*
 
@@ -383,48 +383,46 @@ document.querySelector('.buy').addEventListener('click',(e)=>{
 */
 })
 
-function buy(obj){
-    const wep = new Object
-    wep.id = document.querySelector('#panel-1').weapom.id
 
-    wep.pivot = [obj.fill[0][1],obj.fill[0][0]]
-    wep.pivot[0] -= game.board[obj.fill[0][1]][obj.fill[0][0]].pivot[0] 
-    wep.pivot[1] -= game.board[obj.fill[0][1]][obj.fill[0][0]].pivot[1] 
-    const cel = game.board[wep.pivot[0]][wep.pivot[1]]
-    wep.level = cel.level
-    wep.next_level = wep.level+1 > game.db.weapons[wep.id].length ? 0 : wep.level+1
-    wep.angle = 0
+
+function buy(obj){
+
+    function next_wepom(id_wep,level){
+        const wep = game.db.weapons[id_wep]
+        if(level+1 >= wep.length){
+            return 0
+        }else{
+            return wep[level+1]
+        }
+    }
 
     const nw = game.board[obj.fill[0][1]][obj.fill[0][0]].id < 0
-
-    if(wep.next_level){
-
-
-            if(nw){
-                const next_wep = game.db.weapons[wep.id][wep.level]
-                if(game.gold >= next_wep.coast){
-                    game.gold -= next_wep.coast
-                    for(let i=0; i<4; i++){
-                        const cel = game.board[wep.pivot[0]+(i%2)][wep.pivot[1]+(i<2?0:1)]
-                        cel.id = wep.id
-                        cel.level = wep.level
-                        cel.pivot = [i%2,i<2?0:1]
-                        cel.index = wep.level ? cel.index : game.weapons.length                
-                    }
-                    game.weapons.push(wep)
-                }
-            }else{
-                const wep_index = game.board[obj.fill[0][1]][obj.fill[0][0]].index
-                const board = game.board[game.weapons[wep_index].pivot[0]][game.weapons[wep_index].pivot[1]]
-//                console.log(game.weapons[wep_index])
-//                console.log(game.db.weapons[board.id][board.level-1])
-//                console.log(board)
-                showPanel(board)
-            }
-            showArm()
-
-        
+    const wep = new Object
+    if(nw){
+        wep.id = document.querySelector('#panel-1').weapom.id
+        wep.pivot = [obj.fill[0][1],obj.fill[0][0]]
+        wep.pivot[0] -= game.board[obj.fill[0][1]][obj.fill[0][0]].pivot[0] 
+        wep.pivot[1] -= game.board[obj.fill[0][1]][obj.fill[0][0]].pivot[1] 
+        const cel = game.board[wep.pivot[0]][wep.pivot[1]]
+        wep.level = cel.level
+        wep.angle = 0    
+    }else{
+        console.log('upgrade')
     }
+   
+    if(game.gold >= next_wepom(wep.id,0).coast){
+        game.gold -= next_wepom(wep.id,0).coast
+        for(let i=0; i<4; i++){
+            const cel = game.board[wep.pivot[0]+(i%2)][wep.pivot[1]+(i<2?0:1)]
+            cel.id = wep.id
+            cel.level = wep.level
+            cel.pivot = [i%2,i<2?0:1]
+            cel.index = wep.level ? cel.index : game.weapons.length                
+        }
+        game.weapons.push(wep)
+    }
+
+    showArm()
 }
 
 document.querySelector('#btn-grid').addEventListener('click',()=>{
@@ -454,6 +452,18 @@ function ghost(obj){
     }    
 }
 
+function setPosition(obj){
+    const nw = game.board[obj.fill[0][1]][obj.fill[0][0]].id < 0
+    if(nw){
+        buy(obj)
+    }else{
+        const wep_index = game.board[obj.fill[0][1]][obj.fill[0][0]].index
+        const board = game.board[game.weapons[wep_index].pivot[0]][game.weapons[wep_index].pivot[1]]
+        board.cel = [game.weapons[wep_index].pivot][0]
+        showPanel(board)
+    }
+}
+
 function getPosition(e){
     const obj = new Object
     const arm = document.querySelector('#arm')
@@ -476,7 +486,7 @@ document.querySelector('#arm').addEventListener('mousemove',(e)=>{
 })
 
 document.querySelector('#arm').addEventListener('click',(e)=>{
-    buy(getPosition(e))
+    setPosition(getPosition(e))
     document.querySelector('#arm').classList.add('hide')
 //    showWeapon()
 })
