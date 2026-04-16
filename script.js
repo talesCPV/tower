@@ -341,69 +341,46 @@ document.querySelector('.sell').addEventListener('click',(e)=>{
 })
 
 document.querySelector('.buy').addEventListener('click',(e)=>{
-    const wep = e.target.parentNode.weapom
-//    const cel = document.querySelector('.raio').weapom
-
     buy(game.pivot)
-
-/*
-
-    const wep = e.target.parentNode.weapom
-    const cel = document.querySelector('.raio').weapom
-
-    if(game.gold >= wep.coast){
-
-        const obj = game.weapons[cel.index]
-        game.gold -= wep.coast
-
-        obj.coast = wep.coast
-        obj.range = wep.range
-        obj.damage = wep.damage
-        obj.sell = wep.sell
-        obj.speed = wep.speed
-        obj.level++
-//        showPanel(1,cel.index)
-//        showPanel(2,cel.index)
-//        showArm()
-    }
-*/
 })
 
 function buy(obj){
-console.log(obj)
-    function next_wepom(id_wep,level){
-        const wep = game.db.weapons[id_wep]
-        if(level+1 >= wep.length){
-            return 0
+    const weapom = game.board[obj.fill[0][1]][obj.fill[0][0]]
+    const wep_id = obj.has ?weapom.id:0
+    const next_level = !obj.has ? 0 : weapom.level+1 >= game.db.weapons[wep_id].length ? -1 : weapom.level+1
+   
+    if(next_level >=0){
+        const wep = new Object
+        if(obj.has){
+            game.weapons[weapom.index].level = next_level
+            weapom.level = next_level
         }else{
-            return wep[level+1]
+            wep.id = document.querySelector('#panel-1').weapom.id
+            wep.pivot = [obj.fill[0][1],obj.fill[0][0]]
+            wep.pivot[0] -= game.board[obj.fill[0][1]][obj.fill[0][0]].pivot[0] 
+            wep.pivot[1] -= game.board[obj.fill[0][1]][obj.fill[0][0]].pivot[1] 
+            const cel = game.board[wep.pivot[0]][wep.pivot[1]]
+            wep.level = cel.level
+            wep.angle = 0
+
+            for(let i=0; i<4; i++){
+                const cel = game.board[wep.pivot[0]+(i%2)][wep.pivot[1]+(i<2?0:1)]
+                cel.id = wep.id
+                cel.level = wep.level
+                cel.pivot = [i%2,i<2?0:1]
+                cel.index = wep.level ? cel.index : game.weapons.length                
+            }
+            game.weapons.push(wep)
         }
+/*
+        if(game.gold >= next_wepom.coast){
+            game.gold -= next_wepom.coast
+
+        }
+*/            
     }
 
-    const wep = new Object
-    if(obj.has){
-        console.log('upgrade')
-    }else{
-        wep.id = document.querySelector('#panel-1').weapom.id
-        wep.pivot = [obj.fill[0][1],obj.fill[0][0]]
-        wep.pivot[0] -= game.board[obj.fill[0][1]][obj.fill[0][0]].pivot[0] 
-        wep.pivot[1] -= game.board[obj.fill[0][1]][obj.fill[0][0]].pivot[1] 
-        const cel = game.board[wep.pivot[0]][wep.pivot[1]]
-        wep.level = cel.level
-        wep.angle = 0    
-    }
-   
-    if(game.gold >= next_wepom(wep.id,0).coast){
-        game.gold -= next_wepom(wep.id,0).coast
-        for(let i=0; i<4; i++){
-            const cel = game.board[wep.pivot[0]+(i%2)][wep.pivot[1]+(i<2?0:1)]
-            cel.id = wep.id
-            cel.level = wep.level
-            cel.pivot = [i%2,i<2?0:1]
-            cel.index = wep.level ? cel.index : game.weapons.length                
-        }
-        game.weapons.push(wep)
-    }
+
 
     showArm()
 }
@@ -477,10 +454,11 @@ document.querySelector('#arm').addEventListener('click',(e)=>{
 document.querySelector('#war-field').addEventListener('click',(e)=>{
 
     const pivot = getPosition(e)
-    console.log(pivot)
     const cel = game.board[pivot.fill[0][1]][pivot.fill[0][0]]
     if(cel.id<0){
         game.pivot = 0
+        document.querySelector('#panel-1').classList.add('hide')
+        document.querySelector('#panel-2').classList.add('hide')
     }else{
         game.pivot = pivot
         const board = game.board[pivot.fill[0][1]][pivot.fill[0][0]]
