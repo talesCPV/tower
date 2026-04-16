@@ -82,9 +82,9 @@ const game = new Object
                 const scale =  [cnv.width/13,cnv.height/10]
                 const offset = [(scale[1]/2) * wep.pivot[0],(scale[0]/2) * wep.pivot[1]]
     
-                const l = scale[0]*0.7
-                const h = scale[1]*0.5
-                const angle = wep.angle + 90
+                const l = arm.width*0.5
+                const h = arm.height*0.5
+                const angle = wep.angle
     //            const offset_ang = ((Math.atan2(l/2, h/2) * 180) / Math.PI) + 90
     
                 const center = [offset[1]+scale[0]/2,offset[0]+scale[1]/2]
@@ -93,18 +93,18 @@ const game = new Object
                 const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
                 const cord = [center[0]+raio*cos, center[1]+raio*sin]
     
-                console.log(angle,cord)
+                console.log(angle,cord,l,h)
     
     
                 if (cnv.getContext) {
                     ctx = cnv.getContext('2d');
     //                ctx.clearRect(0, 0, cnv.width, cnv.height)
-                    ctx.save();
                     ctx.drawImage(base,offset[1],offset[0], scale[0], scale[1])
-                      ctx.translate(cord[0],cord[1]);
+                    ctx.save();
+                      ctx.translate(cord[0],cord[1]+15);
     //                  ctx.translate(offset[1]+4,offset[0]+4);
     //                ctx.rotate(Math.PI / 180 * (angle + offset_ang))
-    //                ctx.rotate(Math.PI / 180 * (90))
+                    ctx.rotate(Math.PI / 180 * (angle+180))
     //                ctx.translate(offset[1]-4,offset[0]-4);
                     //                ctx.drawImage(arm,offset[1]+4,offset[0]+4, l, h);
                     ctx.drawImage(arm,0,0, l, h);
@@ -189,6 +189,7 @@ function reset(){
     game.lives = 20
     game.gold = 1000
     game.score = 0
+    game.pivot = 0
 
     game.count=0
 
@@ -279,10 +280,9 @@ function score(){
 
 function showPanel(wep){
 
-    console.log(wep)
-
     function draw(id,obj){
         const speed = obj.speed > 4 ? 'very slow' : obj.speed < 2 ? 'fast' : obj.speed==2 ? 'average' : 'slow'
+        obj.cel = wep.cel
 
         document.querySelector(`#panel-${id}`).classList.remove('hide')
         document.querySelector(`#panel-${id}`).weapom = obj
@@ -303,33 +303,18 @@ function showPanel(wep){
 
 }
 
-function showWeapon(wp=0,pos=null){    
-//    showRange()
-    if(pos==null){
-        const speed = game.db.weapons[wp][0].speed
-        const spd_name = speed > 4 ? 'very slow' : speed < 2 ? 'fast' : speed==2 ? 'average' : 'slow' 
-        document.querySelector('#panel-2').classList.add('hide')
-        document.querySelector('.sell').classList.add('hide')
-        document.querySelector('#arm').classList.remove('hide')
+function showWeapon(wp=0){
+    game.pivot = 0
+    const wep = game.db.weapons[wp][0]
+    wep.id = wp
+    wep.level = 0
+    wep.angle = 0
 
-        document.querySelector('#panel-1').weapom = game.db.weapons[wp][0]
-        document.querySelector('#panel-1').weapom.id  = wp
-        document.querySelector('#panel-1').weapom.level = 0
-        document.querySelector('#panel-1').weapom.angle = 0
+    showPanel(wep)
 
-        document.querySelector('#panel-1').querySelector('.title').innerHTML = game.db.weapons[wp][0].name
-        document.querySelector('#panel-1').querySelector('.about').innerHTML = game.db.weapons[wp][0].about
-        document.querySelector('#panel-1').querySelector('.coast').innerHTML = game.db.weapons[wp][0].coast
-        document.querySelector('#panel-1').querySelector('.damage').innerHTML = game.db.weapons[wp][0].damage
-        document.querySelector('#panel-1').querySelector('.range').innerHTML = game.db.weapons[wp][0].range
-        document.querySelector('#panel-1').querySelector('.speed').innerHTML = spd_name
-    }else{
-        document.querySelector('.sell').classList.remove('hide')
-        document.querySelector('#panel-2').classList.remove('hide')
-        document.querySelector('#arm').classList.add('hide')
-
-    }    
-
+    document.querySelector('#panel-2').classList.add('hide')
+    document.querySelector('.sell').classList.add('hide')
+    document.querySelector('#arm').classList.remove('hide')
 }
 
 document.querySelector('#btn-start').addEventListener('click',()=>{
@@ -358,7 +343,8 @@ document.querySelector('.sell').addEventListener('click',(e)=>{
 document.querySelector('.buy').addEventListener('click',(e)=>{
     const wep = e.target.parentNode.weapom
 //    const cel = document.querySelector('.raio').weapom
-    console.log(wep)
+
+    buy(game.pivot)
 
 /*
 
@@ -383,10 +369,8 @@ document.querySelector('.buy').addEventListener('click',(e)=>{
 */
 })
 
-
-
 function buy(obj){
-
+console.log(obj)
     function next_wepom(id_wep,level){
         const wep = game.db.weapons[id_wep]
         if(level+1 >= wep.length){
@@ -396,9 +380,10 @@ function buy(obj){
         }
     }
 
-    const nw = game.board[obj.fill[0][1]][obj.fill[0][0]].id < 0
     const wep = new Object
-    if(nw){
+    if(obj.has){
+        console.log('upgrade')
+    }else{
         wep.id = document.querySelector('#panel-1').weapom.id
         wep.pivot = [obj.fill[0][1],obj.fill[0][0]]
         wep.pivot[0] -= game.board[obj.fill[0][1]][obj.fill[0][0]].pivot[0] 
@@ -406,8 +391,6 @@ function buy(obj){
         const cel = game.board[wep.pivot[0]][wep.pivot[1]]
         wep.level = cel.level
         wep.angle = 0    
-    }else{
-        console.log('upgrade')
     }
    
     if(game.gold >= next_wepom(wep.id,0).coast){
@@ -453,6 +436,7 @@ function ghost(obj){
 }
 
 function setPosition(obj){
+    game.pivot = [obj.fill[0][1],obj.fill[0][0]]
     const nw = game.board[obj.fill[0][1]][obj.fill[0][0]].id < 0
     if(nw){
         buy(obj)
@@ -466,11 +450,11 @@ function setPosition(obj){
 
 function getPosition(e){
     const obj = new Object
-    const arm = document.querySelector('#arm')
+    const cnv = e.target
     const bounds = e.target.getBoundingClientRect();
     obj.x = Math.floor((e.x - Math.floor(bounds.left) )) 
     obj.y = Math.floor((e.y - Math.floor(bounds.top))) 
-    let pos = [Math.floor(obj.x/(arm.clientWidth/26)),Math.floor(obj.y/(arm.clientHeight/20))]
+    let pos = [Math.floor(obj.x/(cnv.clientWidth/26)),Math.floor(obj.y/(cnv.clientHeight/20))]
     pos[0] = pos[0]>24 ? 24 : pos[0]
     pos[1] = pos[1]>18 ? 18 : pos[1]
     obj.fill = [[pos[0],pos[1]],[pos[0],pos[1]+1],[pos[0]+1,pos[1]],[pos[0]+1,pos[1]+1]]
@@ -488,7 +472,21 @@ document.querySelector('#arm').addEventListener('mousemove',(e)=>{
 document.querySelector('#arm').addEventListener('click',(e)=>{
     setPosition(getPosition(e))
     document.querySelector('#arm').classList.add('hide')
-//    showWeapon()
+})
+
+document.querySelector('#war-field').addEventListener('click',(e)=>{
+
+    const pivot = getPosition(e)
+    console.log(pivot)
+    const cel = game.board[pivot.fill[0][1]][pivot.fill[0][0]]
+    if(cel.id<0){
+        game.pivot = 0
+    }else{
+        game.pivot = pivot
+        const board = game.board[pivot.fill[0][1]][pivot.fill[0][0]]
+        board.cel = [pivot.fill[0][1]-cel.pivot[0],pivot.fill[0][0]-cel.pivot[1]]
+        showPanel(board)
+    }
 })
 
 loadData()
