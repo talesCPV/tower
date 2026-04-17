@@ -19,20 +19,39 @@ Enemy.prototype.move = function(){
 }
 
 class Weapom{
-    constructor(id_wep=0,x,y){
+    constructor(y,x,id_wep){
+        this.name = ''
         this.id = id_wep
-        this.name = game.db.weapons[id_wep][0].name
-        this.about = game.db.weapons[id_wep][0].about
-        this.upgrade = game.db.weapons[id_wep][0].upgrade
-        this.coast = game.db.weapons[id_wep][0].coast
-        this.damage = game.db.weapons[id_wep][0].damage
-        this.speed = game.db.weapons[id_wep][0].speed
-        this.range = game.db.weapons[id_wep][0].range
-        this.sell = game.db.weapons[id_wep][0].sell
-        this.angle = 0
         this.level = 0
-        this.x = x
-        this.y = y
+        this.pivot = [y,x]
+        this.angle = 0
+        this.range = 0
+        this.speed = 0
+        this.sell = 0
+        this.damage = 0
+        this.refresh()
+    }
+}
+
+Weapom.prototype.refresh = function(){
+    const wep = game.db.weapons[this.id][this.level]
+    this.name = wep.name
+    this.range = wep.range
+    this.speed = wep.speed
+    this.damage = wep.damage
+    this.sell = wep.sell
+    game.gold -= !this.level ? wep.coast : 0
+}
+
+Weapom.prototype.upgrade = function(){
+    const wep = game.db.weapons[this.id]
+    if(this.level >= wep.length -1){
+        this.level = wep.length -1
+    }else if(wep[this.level+1].coast <= game.gold){
+        game.gold -= wep[this.level+1].coast
+        this.level++
+        game.board[this.pivot[0]][this.pivot[1]].level = this.level
+        this.refresh()
     }
 }
 
@@ -266,21 +285,23 @@ function score(){
 function showPanel(wep){
 
     function draw(id,obj){
-        const speed = obj.speed > 4 ? 'very slow' : obj.speed < 2 ? 'fast' : obj.speed==2 ? 'average' : 'slow'
-        obj.cel = wep.cel
-
-        document.querySelector(`#panel-${id}`).classList.remove('hide')
-        document.querySelector(`#panel-${id}`).weapom = obj
-        document.querySelector(`#panel-${id}`).querySelector('.btn-upgd').classList.remove('hide')
-        document.querySelector(`#panel-${id}`).querySelector('.title').innerHTML = obj.name
-        document.querySelector(`#panel-${id}`).querySelector('.about').innerHTML = obj.about
-        document.querySelector(`#panel-${id}`).querySelector('.coast').innerHTML = obj.coast
-        document.querySelector(`#panel-${id}`).querySelector('.damage').innerHTML = obj.damage
-        document.querySelector(`#panel-${id}`).querySelector('.range').innerHTML = obj.range
-        document.querySelector(`#panel-${id}`).querySelector('.speed').innerHTML = speed
-        document.querySelector(`#panel-${id}`).querySelector('.btn-upgd').innerHTML = id==1 ? `Sell for ${obj.sell}` : 'Upgrade'
+        if(obj != undefined){
+            const speed = obj.speed > 4 ? 'very slow' : obj.speed < 2 ? 'fast' : obj.speed==2 ? 'average' : 'slow'
+            obj.cel = wep.cel    
+            document.querySelector(`#panel-${id}`).classList.remove('hide')
+            document.querySelector(`#panel-${id}`).weapom = obj
+            document.querySelector(`#panel-${id}`).querySelector('.btn-upgd').classList.remove('hide')
+            document.querySelector(`#panel-${id}`).querySelector('.title').innerHTML = obj.name
+            document.querySelector(`#panel-${id}`).querySelector('.about').innerHTML = obj.about
+            document.querySelector(`#panel-${id}`).querySelector('.coast').innerHTML = obj.coast
+            document.querySelector(`#panel-${id}`).querySelector('.damage').innerHTML = obj.damage
+            document.querySelector(`#panel-${id}`).querySelector('.range').innerHTML = obj.range
+            document.querySelector(`#panel-${id}`).querySelector('.speed').innerHTML = speed
+            document.querySelector(`#panel-${id}`).querySelector('.btn-upgd').innerHTML = id==1 ? `Sell for ${obj.sell}` : 'Upgrade'    
+        }else{
+            document.querySelector(`#panel-${id}`).classList.add('hide')
+        }
     }
-
     draw(1,game.db.weapons[wep.id][wep.level])
     draw(2,game.db.weapons[wep.id][wep.level+1])
 }
@@ -327,24 +348,16 @@ document.querySelector('.buy').addEventListener('click',(e)=>{
 })
 
 function buy(obj){
-    const weapom = game.board[obj.fill[0][1]][obj.fill[0][0]]
+    const pivot = [obj.fill[0][1],obj.fill[0][0]]
+    const weapom = game.board[pivot[0]][pivot[1]]
     const wep_id = obj.has ?weapom.id:0
     const next_level = !obj.has ? 0 : weapom.level+1 >= game.db.weapons[wep_id].length ? -1 : weapom.level+1
    
     if(next_level >=0){
-        const wep = new Object
         if(obj.has){
-            game.weapons[weapom.index].level = next_level
-            weapom.level = next_level
+            game.weapons[weapom.index].upgrade()
         }else{
-            wep.id = document.querySelector('#panel-1').weapom.id
-            wep.pivot = [obj.fill[0][1],obj.fill[0][0]]
-            wep.pivot[0] -= game.board[obj.fill[0][1]][obj.fill[0][0]].pivot[0] 
-            wep.pivot[1] -= game.board[obj.fill[0][1]][obj.fill[0][0]].pivot[1] 
-            const cel = game.board[wep.pivot[0]][wep.pivot[1]]
-            wep.level = cel.level
-            wep.angle = 0
-
+            const wep = new Weapom(pivot[0],pivot[1],document.querySelector('#panel-1').weapom.id)
             for(let i=0; i<4; i++){
                 const cel = game.board[wep.pivot[0]+(i%2)][wep.pivot[1]+(i<2?0:1)]
                 cel.id = wep.id
@@ -353,16 +366,8 @@ function buy(obj){
                 cel.index = wep.level ? cel.index : game.weapons.length                
             }
             game.weapons.push(wep)
-        }
-/*
-        if(game.gold >= next_wepom.coast){
-            game.gold -= next_wepom.coast
-
-        }
-*/            
+        }  
     }
-
-
 
     showArm()
 }
@@ -394,7 +399,8 @@ function ghost(obj){
     }    
 }
 
-function setPosition(obj){
+function setPosition(e){
+    const obj = getPosition(e)
     game.pivot = [obj.fill[0][1],obj.fill[0][0]]
     const nw = game.board[obj.fill[0][1]][obj.fill[0][0]].id < 0
     if(nw){
@@ -418,9 +424,15 @@ function getPosition(e){
     pos[1] = pos[1]>18 ? 18 : pos[1]
     obj.fill = [[pos[0],pos[1]],[pos[0],pos[1]+1],[pos[0]+1,pos[1]],[pos[0]+1,pos[1]+1]]
     obj.has = 0
+    const pivot = game.board[obj.fill[0][1]][obj.fill[0][0]].pivot
     for(let i=0; i<4; i++){
         obj.has = obj.has ? 1 : game.board[obj.fill[i][1]][obj.fill[i][0]].id >=0
+        if(obj.has){
+            obj.fill[i][0] -= pivot[1]
+            obj.fill[i][1] -= pivot[0]            
+        }
     }
+
     return obj
 }
 
@@ -429,7 +441,7 @@ document.querySelector('#arm').addEventListener('mousemove',(e)=>{
 })
 
 document.querySelector('#arm').addEventListener('click',(e)=>{
-    setPosition(getPosition(e))
+    setPosition(e)
     document.querySelector('#arm').classList.add('hide')
 })
 
@@ -445,7 +457,10 @@ document.querySelector('#war-field').addEventListener('click',(e)=>{
         game.pivot = pivot
         const board = game.board[pivot.fill[0][1]][pivot.fill[0][0]]
         board.cel = [pivot.fill[0][1]-cel.pivot[0],pivot.fill[0][0]-cel.pivot[1]]
-        showPanel(board)
+        const wep = game.db.weapons[board.id][board.level]
+        wep.id = board.id
+        wep.level = board.level
+        showPanel(wep)
     }
 })
 
