@@ -84,38 +84,23 @@ const game = new Object
     
                 const l = arm.width*0.5
                 const h = arm.height*0.5
-                const angle = wep.angle
-    //            const offset_ang = ((Math.atan2(l/2, h/2) * 180) / Math.PI) + 90
+                const angle = wep.angle + 225
     
                 const center = [offset[1]+scale[0]/2,offset[0]+scale[1]/2]
                 const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
                 const sin = Number((Math.sin(Math.PI/180 * angle)).toFixed(2))
                 const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
                 const cord = [center[0]+raio*cos, center[1]+raio*sin]
-    
-                console.log(angle,cord,l,h)
-    
-    
+        
                 if (cnv.getContext) {
                     ctx = cnv.getContext('2d');
-    //                ctx.clearRect(0, 0, cnv.width, cnv.height)
                     ctx.drawImage(base,offset[1],offset[0], scale[0], scale[1])
                     ctx.save();
-                      ctx.translate(cord[0],cord[1]+15);
-    //                  ctx.translate(offset[1]+4,offset[0]+4);
-    //                ctx.rotate(Math.PI / 180 * (angle + offset_ang))
-                    ctx.rotate(Math.PI / 180 * (angle+180))
-    //                ctx.translate(offset[1]-4,offset[0]-4);
-                    //                ctx.drawImage(arm,offset[1]+4,offset[0]+4, l, h);
+                    ctx.translate(cord[0],cord[1]);
+//                    ctx.clearRect(0, 0, l,h)
+                    ctx.rotate(Math.PI / 180 * (angle + 135))
                     ctx.drawImage(arm,0,0, l, h);
                     ctx.restore(); 
-    
-    // PONTEIRO
-                    ctx.beginPath()
-                    ctx.moveTo(center[0], center[1])
-                    ctx.lineTo(cord[0], cord[1])
-                    ctx.stroke()                
-    
                 }
             }          
         }
@@ -287,7 +272,6 @@ function showPanel(wep){
         document.querySelector(`#panel-${id}`).classList.remove('hide')
         document.querySelector(`#panel-${id}`).weapom = obj
         document.querySelector(`#panel-${id}`).querySelector('.btn-upgd').classList.remove('hide')
-    
         document.querySelector(`#panel-${id}`).querySelector('.title').innerHTML = obj.name
         document.querySelector(`#panel-${id}`).querySelector('.about').innerHTML = obj.about
         document.querySelector(`#panel-${id}`).querySelector('.coast').innerHTML = obj.coast
@@ -295,12 +279,10 @@ function showPanel(wep){
         document.querySelector(`#panel-${id}`).querySelector('.range').innerHTML = obj.range
         document.querySelector(`#panel-${id}`).querySelector('.speed').innerHTML = speed
         document.querySelector(`#panel-${id}`).querySelector('.btn-upgd').innerHTML = id==1 ? `Sell for ${obj.sell}` : 'Upgrade'
-
     }
 
     draw(1,game.db.weapons[wep.id][wep.level])
     draw(2,game.db.weapons[wep.id][wep.level+1])
-
 }
 
 function showWeapon(wp=0){
