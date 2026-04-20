@@ -118,7 +118,6 @@ Weapom.prototype.load = function(){
         }
         this.loading--
         if(this.loading<=0){
-            console.log('end')
             clearInterval(this.timer)
             showAll()
         }
@@ -168,7 +167,6 @@ async function loadData() {
 }
 
 function showAll(){ 
-console.log(1)
     const cnv = document.querySelector('#war-field')
     if (cnv.getContext) {
         ctx = cnv.getContext('2d');
