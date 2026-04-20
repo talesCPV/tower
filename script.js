@@ -29,7 +29,11 @@ class Weapom{
         this.speed = 0
         this.sell = 0
         this.damage = 0
+        this.bullets = []
         this.refresh()
+        this.base = new Image()
+        this.base.src = 'assets/w_base.png'
+        this.base.height = this.base.width
     }
 }
 
@@ -52,6 +56,48 @@ Weapom.prototype.upgrade = function(){
         this.level++
         game.board[this.pivot[0]][this.pivot[1]].level = this.level
         this.refresh()
+    }
+}
+
+Weapom.prototype.plot = function(){
+
+    const arm = new Image()
+    arm.src = `assets/w${this.id+1}_cannon.png`
+
+    arm.onload= ()=>{
+        const cnv = document.querySelector('#war-field')
+        const scale =  [cnv.width/13,cnv.height/10]
+        const offset = [(scale[1]/2) * this.pivot[0],(scale[0]/2) * this.pivot[1]]
+
+        const l = arm.width*0.5
+        const h = arm.height*0.4
+        const angle = this.angle + 225
+
+        const center = [offset[1]+scale[0]/2,offset[0]+scale[1]/2]
+        const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
+        const sin = Number((Math.sin(Math.PI/180 * angle)).toFixed(2))
+        const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
+        const cord = [center[0]+raio*cos, center[1]+raio*sin]
+
+        if (cnv.getContext) {
+            ctx = cnv.getContext('2d');
+            ctx.clearRect(offset[1],offset[0], scale[0], scale[1])
+            ctx.drawImage(this.base,offset[1],offset[0], scale[0], scale[1])
+            ctx.save();
+            ctx.translate(cord[0],cord[1]);
+            ctx.rotate(Math.PI / 180 * (angle + 135))
+            ctx.drawImage(arm,0,0, l, h);
+            ctx.restore(); 
+        }
+    } 
+}
+
+class Bullet{
+    constructor(y,x,force,speed,angle){
+        this.pivot = [y,x]
+        this.angle = angle
+        this.force = force
+        this.speed = speed
     }
 }
 
@@ -86,107 +132,13 @@ const game = new Object
         reset()
     }
 
-    function showArm(){
-        const cnv = document.querySelector('#war-field')
-        function drawWeapom(wep){
-
-            const base = new Image()
-            base.src = 'assets/w_base.png'
-            base.height = base.width
-
-            const arm = new Image()
-            arm.src = `assets/w${wep.id+1}_cannon.png`
-
-            arm.onload= ()=>{
-                const scale =  [cnv.width/13,cnv.height/10]
-                const offset = [(scale[1]/2) * wep.pivot[0],(scale[0]/2) * wep.pivot[1]]
-    
-                const l = arm.width*0.5
-                const h = arm.height*0.5
-                const angle = wep.angle + 225
-    
-                const center = [offset[1]+scale[0]/2,offset[0]+scale[1]/2]
-                const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
-                const sin = Number((Math.sin(Math.PI/180 * angle)).toFixed(2))
-                const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
-                const cord = [center[0]+raio*cos, center[1]+raio*sin]
-        
-                if (cnv.getContext) {
-                    ctx = cnv.getContext('2d');
-                    ctx.drawImage(base,offset[1],offset[0], scale[0], scale[1])
-                    ctx.save();
-                    ctx.translate(cord[0],cord[1]);
-//                    ctx.clearRect(0, 0, l,h)
-                    ctx.rotate(Math.PI / 180 * (angle + 135))
-                    ctx.drawImage(arm,0,0, l, h);
-                    ctx.restore(); 
-                }
-            }          
-        }
-
-        for(let i=0; i<game.weapons.length; i++){
-            drawWeapom(game.weapons[i])
-        }
+function showArm(){ 
+    for(let i=0; i<game.weapons.length; i++){
+        game.weapons[i].plot()
     }
-/*
-    function showRange(cel=null){
-        const range = document.querySelectorAll('.raio')
-        for(let i=0; i<range.length; i++){
-            range[i].classList.remove('raio')
-        }
-        if(cel!=null){
-            document.documentElement.style.setProperty('--range', `${cel.weapom.range*2.5}px`);
-            cel.classList.add('raio')
-        }
-    }
-*/
-/*
-    function showEnemies(){
+}
 
-        function drawEnemy(id_enemy){
 
-            const cnv = document.createElement('canvas')
-    
-            cnv.width = 100
-            cnv.height = 100
-    
-            const enemy = new Image()
-            base.src = 'assets/w_base.png'
-            base.height = base.width
-    
-            const arm = new Image()
-            arm.src = `assets/w${id_wep}_cannon.png`
-    
-            const angle = ang +35
-            const offset = 0
-            const l = arm.width
-            const h = arm.height
-            const offset_ang = ((Math.atan2(l/2, h/2) * 180) / Math.PI) + 90
-            const scale =  cnv.width / base.width
-    
-            const center = [offset+l/2,offset+h/2]
-            const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
-            const sin = Number((Math.sin(Math.PI/180 * angle)).toFixed(2))
-            const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
-            const cord = [center[0]+raio*cos, center[1]+raio*sin]
-    
-            if (cnv.getContext) {
-                ctx = cnv.getContext('2d');
-                ctx.clearRect(0, 0, cnv.width, cnv.height)
-                ctx.save();
-                ctx.scale(scale,scale)
-                ctx.drawImage(base,offset,offset, base.width, base.height)
-                ctx.translate(cord[0]+((base.width-l)/2),cord[1]+((base.height-h)/2));
-                ctx.rotate(Math.PI / 180 * (angle + offset_ang))
-                ctx.drawImage(arm,0,0, l,h);
-                ctx.restore(); 
-            }
-    
-            return cnv
-        }
-
-    }
-*/
 function reset(){
     game.time = 30
     game.level = 1
@@ -320,33 +272,6 @@ function showWeapon(wp=0){
     document.querySelector('#arm').classList.remove('hide')
 }
 
-document.querySelector('#btn-start').addEventListener('click',()=>{
-    game.pause = !game.pause
-    document.querySelector('#btn-start').innerHTML = game.pause ? 'START' : 'PAUSE'
-})
-
-document.querySelector('#btn-reset').addEventListener('click',()=>{
-    reset()
-})
-
-document.querySelector('#btn-next').addEventListener('click',()=>{
-    nextLevel()
-})
-
-document.querySelector('.sell').addEventListener('click',(e)=>{
-    if(confirm('Do you really wanna sell it?')){
-        const wep = e.target.parentNode.weapom
-        game.gold += wep.sell
-        game.weapons.splice(wep.index,1) 
-        document.querySelector(`#cel-${wep.y}-${wep.x}`).innerHTML = ''
-        showArm()
-    }
-})
-
-document.querySelector('.buy').addEventListener('click',(e)=>{
-    buy(game.pivot)
-})
-
 function buy(obj){
     const pivot = [obj.fill[0][1],obj.fill[0][0]]
     const weapom = game.board[pivot[0]][pivot[1]]
@@ -366,22 +291,10 @@ function buy(obj){
                 cel.index = wep.level ? cel.index : game.weapons.length                
             }
             game.weapons.push(wep)
+            game.weapons[game.weapons.length-1].plot()
         }  
     }
-
-    showArm()
 }
-
-document.querySelector('#btn-grid').addEventListener('click',()=>{
-    game.grid = !game.grid
-    if(game.grid){
-        document.querySelector('#grid').classList.add('grid')
-        document.querySelector('#btn-grid').innerHTML = 'NO GRID'
-    }else{
-        document.querySelector('#grid').classList.remove('grid')
-        document.querySelector('#btn-grid').innerHTML = 'GRID'
-    }
-})
 
 function ghost(obj){
     const cnv = document.querySelector('#arm')
@@ -435,6 +348,50 @@ function getPosition(e){
 
     return obj
 }
+
+document.querySelector('#btn-start').addEventListener('click',()=>{
+    game.pause = !game.pause
+    document.querySelector('#btn-start').innerHTML = game.pause ? 'START' : 'PAUSE'
+})
+
+document.querySelector('#btn-reset').addEventListener('click',()=>{
+    reset()
+})
+
+document.querySelector('#btn-next').addEventListener('click',()=>{
+    nextLevel()
+})
+
+document.querySelector('.sell').addEventListener('click',()=>{
+    if(confirm('Do you really wanna sell it?')){
+        const pivot = game.pivot.fill[0]
+        const cel = game.board[pivot[1]][pivot[0]]
+        console.log(pivot)
+        console.log(cel)
+/*        
+        const wep = e.target.parentNode.weapom
+        game.gold += wep.sell
+        game.weapons.splice(wep.index,1) 
+        document.querySelector(`#cel-${wep.y}-${wep.x}`).innerHTML = ''
+        showArm()
+*/
+    }
+})
+
+document.querySelector('.buy').addEventListener('click',(e)=>{
+    buy(game.pivot)
+})
+
+document.querySelector('#btn-grid').addEventListener('click',()=>{
+    game.grid = !game.grid
+    if(game.grid){
+        document.querySelector('#grid').classList.add('grid')
+        document.querySelector('#btn-grid').innerHTML = 'NO GRID'
+    }else{
+        document.querySelector('#grid').classList.remove('grid')
+        document.querySelector('#btn-grid').innerHTML = 'GRID'
+    }
+})
 
 document.querySelector('#arm').addEventListener('mousemove',(e)=>{
     ghost(getPosition(e))

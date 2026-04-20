@@ -355,7 +355,7 @@
         {   "name":"IMUNE",
             "background" : "#ab02a8",
             "flying" : 0,
-            "imune" : 0,
+            "imune" : 1,
             "health" :50,
             "speed" : 1
         },
