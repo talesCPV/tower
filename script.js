@@ -70,8 +70,8 @@ Weapom.prototype.plot = function(){
         const scale =  [cnv.width/13,cnv.height/10]
         const offset = [(scale[1]/2) * this.pivot[0],(scale[0]/2) * this.pivot[1]]
 
-        const l = arm.width*0.5
-        const h = arm.height*0.4
+        const l = arm.width*0.7
+        const h = arm.height*0.7
         const angle = this.angle + 225
 
         const center = [offset[1]+scale[0]/2,offset[0]+scale[1]/2]
@@ -84,13 +84,13 @@ Weapom.prototype.plot = function(){
             ctx = cnv.getContext('2d');
             ctx.clearRect(offset[1],offset[0], scale[0], scale[1])
             ctx.drawImage(this.base,offset[1],offset[0], scale[0], scale[1])
+            ctx.fillStyle = '#a40300'
             for(let i=0; i<this.level; i++){
-                ctx.fillRect(offset[1]+(i*4)+1,offset[0] + scale[1]-4, 3, 2);
+                ctx.fillRect(offset[1]+(i*4.5)+2,offset[0] + scale[1]-5, 3, 2);
             }
             ctx.save();
             ctx.translate(cord[0],cord[1]);
             ctx.rotate(Math.PI / 180 * (angle + 135))
-
             ctx.drawImage(arm,0,0, l, h);
             ctx.restore(); 
         }
@@ -108,36 +108,36 @@ class Bullet{
 
 const game = new Object
 
-    game.clock = setInterval(()=>{
-        if(!game.pause && game.scroll < 4098 ){
-            game.count++
-            game.scroll +=0.026
-            document.querySelector('.bottom').scrollTo(game.scroll,0)
+game.clock = setInterval(()=>{
+    if(!game.pause && game.scroll < 4098 ){
+        game.count++
+        game.scroll +=0.026
+        document.querySelector('.bottom').scrollTo(game.scroll,0)
 
-            if(game.count >= 100){
-                game.count=0
-                game.time--
-                game.time < 0 ? nextLevel() : null                
-                game.time = game.time < 0 ? 0 : game.time
-            }
-        }else{
-            game.pause = 1
-            document.querySelector('#btn-start').innerHTML = 'START' 
+        if(game.count >= 100){
+            game.count=0
+            game.time--
+            game.time < 0 ? nextLevel() : null                
+            game.time = game.time < 0 ? 0 : game.time
         }
-        score()
-    }, 10);
-
-
-    async function loadData() {
-        const response = await fetch("data.json");
-        const json = await response.json();
-        game.db = new Object
-        game.db.weapons = json.weapons
-        game.db.enemies = json.enemies
-        reset()
+    }else{
+        game.pause = 1
+        document.querySelector('#btn-start').innerHTML = 'START' 
     }
+    score()
+}, 10);
+
+async function loadData() {
+    const response = await fetch("data.json");
+    const json = await response.json();
+    game.db = new Object
+    game.db.weapons = json.weapons
+    game.db.enemies = json.enemies
+    reset()
+}
 
 function showAll(){ 
+console.log(1)
     const cnv = document.querySelector('#war-field')
     if (cnv.getContext) {
         ctx = cnv.getContext('2d');
@@ -146,6 +146,24 @@ function showAll(){
 
     for(let i=0; i<game.weapons.length; i++){
         game.weapons[i].plot()
+    }
+
+    showRange()
+}
+
+function showRange(){
+    if(game.pivot){
+        const range = game.weapons[game.board[game.pivot.fill[0][1]][game.pivot.fill[0][0]].index].range
+        const cnv = document.querySelector('#war-field')
+        const scale =  [cnv.width/13,cnv.height/10]
+        const offset = [(scale[1]/2) * game.pivot.fill[0][1],(scale[0]/2) * game.pivot.fill[0][0]]
+        if (cnv.getContext) {
+            ctx = cnv.getContext('2d')
+            ctx.fillStyle = '#0000002b'
+            ctx.beginPath();
+            ctx.arc(offset[1]+scale[0]/2,offset[0]+scale[1]/2, range, 0, 2*Math.PI);
+            ctx.fill();
+        }
     }
 }
 
@@ -291,6 +309,7 @@ function buy(obj){
     if(next_level >=0){
         if(obj.has){
             game.weapons[weapom.index].upgrade()
+            showPanel(game.weapons[weapom.index])
         }else{
             const wep = new Weapom(pivot[0],pivot[1],document.querySelector('#panel-1').weapom.id)
             for(let i=0; i<4; i++){
@@ -301,8 +320,11 @@ function buy(obj){
                 cel.index = wep.level ? cel.index : game.weapons.length                
             }
             game.weapons.push(wep)
-            game.weapons[game.weapons.length-1].plot()
-        }  
+            obj.has = 1
+            game.weapons[game.weapons.length-1].plot()            
+            showPanel(game.weapons[game.weapons.length-1])
+        }
+        showAll()
     }
 }
 
@@ -328,7 +350,7 @@ function sell(obj){
         game.board[game.weapons[i].pivot[0]+1][game.weapons[i].pivot[1]].index = i
         game.board[game.weapons[i].pivot[0]+1][game.weapons[i].pivot[1]+1].index = i
     }
-
+    game.pivot = 0
     document.querySelector('#panel-1').classList.add('hide')
     document.querySelector('#panel-2').classList.add('hide')
 
@@ -352,13 +374,12 @@ function ghost(obj){
 }
 
 function setPosition(e){
-    const obj = getPosition(e)
-    game.pivot = [obj.fill[0][1],obj.fill[0][0]]
-    const nw = game.board[obj.fill[0][1]][obj.fill[0][0]].id < 0
+    game.pivot = getPosition(e)
+    const nw = game.board[game.pivot.fill[0][1]][game.pivot.fill[0][0]].id < 0
     if(nw){
-        buy(obj)
+        buy(game.pivot)
     }else{
-        const wep_index = game.board[obj.fill[0][1]][obj.fill[0][0]].index
+        const wep_index = game.board[game.pivot.fill[0][1]][game.pivot.fill[0][0]].index
         const board = game.board[game.weapons[wep_index].pivot[0]][game.weapons[wep_index].pivot[1]]
         board.cel = [game.weapons[wep_index].pivot][0]
         showPanel(board)
@@ -448,6 +469,8 @@ document.querySelector('#war-field').addEventListener('click',(e)=>{
         wep.level = board.level
         showPanel(wep)
     }
+    showAll()
+
 })
 
 loadData()
