@@ -380,5 +380,12 @@
             "health" :50,
             "speed" : 1
         }
+    ],
+    "waves":[
+        {   "id_enemy" : 0,
+            "health_x" : 1,
+            "qtd" : 50,
+            "boss" : 0
+        }
     ]
 }
