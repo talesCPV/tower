@@ -29,6 +29,7 @@ class Weapom{
         this.speed = 0
         this.sell = 0
         this.damage = 0
+        this.loading = 0
         this.bullets = []
         this.refresh()
         this.base = new Image()
@@ -49,14 +50,17 @@ Weapom.prototype.refresh = function(){
 }
 
 Weapom.prototype.upgrade = function(){
-    const wep = game.db.weapons[this.id]
-    if(this.level >= wep.length -1){
-        this.level = wep.length -1
-    }else if(wep[this.level+1].coast <= game.gold){
-        game.gold -= wep[this.level+1].coast
-        this.level++
-        game.board[this.pivot[0]][this.pivot[1]].level = this.level
-        this.refresh()
+    if(!this.loading){
+        const wep = game.db.weapons[this.id]
+        if(this.level >= wep.length -1){
+            this.level = wep.length -1
+        }else if(wep[this.level+1].coast <= game.gold){
+            game.gold -= wep[this.level+1].coast
+            this.level++
+            game.board[this.pivot[0]][this.pivot[1]].level = this.level
+            this.refresh()
+            this.load()
+        }
     }
 }
 
@@ -95,6 +99,32 @@ Weapom.prototype.plot = function(){
             ctx.restore(); 
         }
     } 
+}
+
+Weapom.prototype.load = function(){
+    this.loading = this.level * 10
+    this.timer = setInterval(()=>{
+        const cnv = document.querySelector('#war-field')
+        const scale =  [cnv.width/13,cnv.height/10]
+        const offset = [(scale[1]/2) * this.pivot[0],(scale[0]/2) * this.pivot[1]]
+        const w = scale[0]/(this.level * 10)*(this.level * 10 - this.loading)
+
+        if (cnv.getContext) {
+            ctx = cnv.getContext('2d');
+            ctx.clearRect(offset[1],offset[0], scale[0], scale[1])
+            ctx.drawImage(this.base,offset[1],offset[0], scale[0], scale[1])
+            ctx.fillStyle = '#fe9900'
+            ctx.fillRect(offset[1]+4,offset[0]+scale[1]/2 , w-4, 2);
+        }
+        this.loading--
+        if(this.loading<=0){
+            console.log('end')
+            clearInterval(this.timer)
+            showAll()
+        }
+
+    }, this.level * 50);
+
 }
 
 class Bullet{
@@ -175,6 +205,7 @@ function reset(){
     game.gold = 1000
     game.score = 0
     game.pivot = 0
+    game.begin = 0
 
     game.count=0
 
@@ -207,8 +238,6 @@ function reset(){
 
     const bottom = document.querySelector('.bottom')
     bottom.innerHTML = ''
-//    let j=0
-
 
     function newSquare(id,i){
         const square = document.createElement('div')
@@ -229,7 +258,6 @@ function reset(){
 
     for(let i=0; i<game.db.waves.length; i++){
         bottom.appendChild(newSquare(game.db.enemies[game.db.waves[i].id_enemy].name,i+1))
-//        j = j<game.db.enemies.length-1 ? j+1 : 0
     }
     const last_square = newSquare('teste',0)
     last_square.classList.add('last-square')
@@ -302,30 +330,32 @@ function showWeapon(wp=0){
 }
 
 function buy(obj){
-    const pivot = [obj.fill[0][1],obj.fill[0][0]]
-    const weapom = game.board[pivot[0]][pivot[1]]
-    const wep_id = obj.has ?weapom.id:0
-    const next_level = !obj.has ? 0 : weapom.level+1 >= game.db.weapons[wep_id].length ? -1 : weapom.level+1
-   
-    if(next_level >=0){
-        if(obj.has){
-            game.weapons[weapom.index].upgrade()
-            showPanel(game.weapons[weapom.index])
-        }else{
-            const wep = new Weapom(pivot[0],pivot[1],document.querySelector('#panel-1').weapom.id)
-            for(let i=0; i<4; i++){
-                const cel = game.board[wep.pivot[0]+(i%2)][wep.pivot[1]+(i<2?0:1)]
-                cel.id = wep.id
-                cel.level = wep.level
-                cel.pivot = [i%2,i<2?0:1]
-                cel.index = wep.level ? cel.index : game.weapons.length                
+    if(!game.begin || !game.pause){
+        const pivot = [obj.fill[0][1],obj.fill[0][0]]
+        const weapom = game.board[pivot[0]][pivot[1]]
+        const wep_id = obj.has ?weapom.id:0
+        const next_level = !obj.has ? 0 : weapom.level+1 >= game.db.weapons[wep_id].length ? -1 : weapom.level+1
+       
+        if(next_level >=0){
+            if(obj.has){
+                game.weapons[weapom.index].upgrade()
+                showPanel(game.weapons[weapom.index])
+            }else{
+                const wep = new Weapom(pivot[0],pivot[1],document.querySelector('#panel-1').weapom.id)
+                for(let i=0; i<4; i++){
+                    const cel = game.board[wep.pivot[0]+(i%2)][wep.pivot[1]+(i<2?0:1)]
+                    cel.id = wep.id
+                    cel.level = wep.level
+                    cel.pivot = [i%2,i<2?0:1]
+                    cel.index = wep.level ? cel.index : game.weapons.length                
+                }
+                game.weapons.push(wep)
+                obj.has = 1
+                game.weapons[game.weapons.length-1].plot()            
+                showPanel(game.weapons[game.weapons.length-1])
             }
-            game.weapons.push(wep)
-            obj.has = 1
-            game.weapons[game.weapons.length-1].plot()            
-            showPanel(game.weapons[game.weapons.length-1])
+            showAll()
         }
-        showAll()
     }
 }
 
@@ -412,6 +442,7 @@ function getPosition(e){
 
 document.querySelector('#btn-start').addEventListener('click',()=>{
     game.pause = !game.pause
+    game.begin = 1
     document.querySelector('#btn-start').innerHTML = game.pause ? 'START' : 'PAUSE'
 })
 
