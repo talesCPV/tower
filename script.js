@@ -45,6 +45,7 @@ Weapom.prototype.refresh = function(){
     this.damage = wep.damage
     this.sell = wep.sell
     game.gold -= !this.level ? wep.coast : 0
+    this.plot()
 }
 
 Weapom.prototype.upgrade = function(){
@@ -83,9 +84,13 @@ Weapom.prototype.plot = function(){
             ctx = cnv.getContext('2d');
             ctx.clearRect(offset[1],offset[0], scale[0], scale[1])
             ctx.drawImage(this.base,offset[1],offset[0], scale[0], scale[1])
+            for(let i=0; i<this.level; i++){
+                ctx.fillRect(offset[1]+(i*4)+1,offset[0] + scale[1]-4, 3, 2);
+            }
             ctx.save();
             ctx.translate(cord[0],cord[1]);
             ctx.rotate(Math.PI / 180 * (angle + 135))
+
             ctx.drawImage(arm,0,0, l, h);
             ctx.restore(); 
         }
@@ -132,12 +137,17 @@ const game = new Object
         reset()
     }
 
-function showArm(){ 
+function showAll(){ 
+    const cnv = document.querySelector('#war-field')
+    if (cnv.getContext) {
+        ctx = cnv.getContext('2d');
+        ctx.clearRect(0,0,cnv.width,cnv.height)
+    }
+
     for(let i=0; i<game.weapons.length; i++){
         game.weapons[i].plot()
     }
 }
-
 
 function reset(){
     game.time = 30
@@ -296,6 +306,35 @@ function buy(obj){
     }
 }
 
+function sell(obj){
+    const pivot = [obj.fill[0][1],obj.fill[0][0]]
+    const cel = game.board[pivot[0]][pivot[1]]
+    const wep = game.weapons[cel.index]
+
+    game.gold += wep.sell
+    game.weapons.splice(cel.index,1)
+
+    for(let i=0; i<4;i++){
+        const cel = game.board[pivot[0]+(i%2)][pivot[1]+(i<2?0:1)]
+        cel.id = -1
+        cel.index = -1
+        cel.level = 0 
+        cel.pivot = [0,0]
+    }
+
+    for(let i=0; i<game.weapons.length; i++){
+        game.board[game.weapons[i].pivot[0]][game.weapons[i].pivot[1]].index = i
+        game.board[game.weapons[i].pivot[0]][game.weapons[i].pivot[1]+1].index = i
+        game.board[game.weapons[i].pivot[0]+1][game.weapons[i].pivot[1]].index = i
+        game.board[game.weapons[i].pivot[0]+1][game.weapons[i].pivot[1]+1].index = i
+    }
+
+    document.querySelector('#panel-1').classList.add('hide')
+    document.querySelector('#panel-2').classList.add('hide')
+
+    showAll()
+}
+
 function ghost(obj){
     const cnv = document.querySelector('#arm')
     const square = [cnv.width/13,cnv.height/10]
@@ -364,17 +403,7 @@ document.querySelector('#btn-next').addEventListener('click',()=>{
 
 document.querySelector('.sell').addEventListener('click',()=>{
     if(confirm('Do you really wanna sell it?')){
-        const pivot = game.pivot.fill[0]
-        const cel = game.board[pivot[1]][pivot[0]]
-        console.log(pivot)
-        console.log(cel)
-/*        
-        const wep = e.target.parentNode.weapom
-        game.gold += wep.sell
-        game.weapons.splice(wep.index,1) 
-        document.querySelector(`#cel-${wep.y}-${wep.x}`).innerHTML = ''
-        showArm()
-*/
+        sell(game.pivot)
     }
 })
 
