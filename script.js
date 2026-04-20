@@ -133,6 +133,7 @@ async function loadData() {
     game.db = new Object
     game.db.weapons = json.weapons
     game.db.enemies = json.enemies
+    game.db.waves = json.waves
     reset()
 }
 
@@ -206,7 +207,7 @@ function reset(){
 
     const bottom = document.querySelector('.bottom')
     bottom.innerHTML = ''
-    let j=0
+//    let j=0
 
 
     function newSquare(id,i){
@@ -226,9 +227,9 @@ function reset(){
         return square
     }
 
-    for(let i=1; i<=50; i++){
-        bottom.appendChild(newSquare(game.db.enemies[j].name,i))
-        j = j<game.db.enemies.length-1 ? j+1 : 0
+    for(let i=0; i<game.db.waves.length; i++){
+        bottom.appendChild(newSquare(game.db.enemies[game.db.waves[i].id_enemy].name,i+1))
+//        j = j<game.db.enemies.length-1 ? j+1 : 0
     }
     const last_square = newSquare('teste',0)
     last_square.classList.add('last-square')
@@ -237,7 +238,7 @@ function reset(){
 }
 
 function nextLevel(){
-    if(game.level < 50 ){
+    if(game.level < game.db.waves.length ){
         game.level ++
         game.time=30
         const next_level = game.scroll +(82 - + (game.scroll % 82))

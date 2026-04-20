@@ -386,6 +386,41 @@
             "health_x" : 1,
             "qtd" : 50,
             "boss" : 0
+        },
+        {   "id_enemy" : 0,
+            "health_x" : 1,
+            "qtd" : 50,
+            "boss" : 0
+        },
+        {   "id_enemy" : 0,
+            "health_x" : 1,
+            "qtd" : 50,
+            "boss" : 0
+        },
+        {   "id_enemy" : 1,
+            "health_x" : 1,
+            "qtd" : 50,
+            "boss" : 0
+        },
+        {   "id_enemy" : 2,
+            "health_x" : 1,
+            "qtd" : 50,
+            "boss" : 0
+        },
+        {   "id_enemy" : 3,
+            "health_x" : 1,
+            "qtd" : 50,
+            "boss" : 0
+        },
+        {   "id_enemy" : 4,
+            "health_x" : 1,
+            "qtd" : 50,
+            "boss" : 0
+        },
+        {   "id_enemy" : 5,
+            "health_x" : 1,
+            "qtd" : 50,
+            "boss" : 0
         }
     ]
 }
