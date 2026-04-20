@@ -14,6 +14,7 @@ then
     git add index.html
     git add teste.html
     git add commit.sh
+    git add data.json
     
     git commit -m "by_script"
 
