@@ -1,6 +1,6 @@
 
 class Enemy{
-    constructor(id_en=0, health=1){
+    constructor(id_en=0, health=1, direct = 'h'){
         this.id = id_en
         this.name = game.db.enemies[id_en].name
         this.background = game.db.enemies[id_en].background
@@ -9,8 +9,23 @@ class Enemy{
         this.health = game.db.enemies[id_en].health * health
         this.speed = game.db.enemies[id_en].speed * 0.1
         this.angle = 0
-        this.x = -10 - Math.floor(Math.random()*50)
-        this.y = 110 + Math.floor(Math.random()*50)
+        this.direct = direct
+        this.kill = 0
+
+        this.offset_y = 38
+        this.offset_x = 46
+        this.line_h = 14.2    
+        this.line_w = 12.7
+
+        if(direct == 'h'){
+            this.x = -10 - Math.floor(Math.random()*50)
+            this.y = this.offset_y + Math.floor((Math.random()*6) + 7) * this.line_h
+        }else{
+            this.x = this.offset_x + Math.floor((Math.random()*8) + 9) * this.line_w
+            this.y = -10 - Math.floor(Math.random()*50)
+        }
+
+
         this.sprite = new Image()
         this.sprite.src = `assets/en_${this.name.toLowerCase()}.png`
     }
@@ -34,7 +49,14 @@ Enemy.prototype.plot = function(){
 }
 
 Enemy.prototype.move = function(){
-    this.x += this.speed
+    if(this.direct == 'h'){
+        this.x += this.speed
+        this.kill = this.x >= this.offset_x + 26*this.line_w ? 1 : 0
+    }else{
+        this.y += this.speed
+        this.kill = this.y >= this.offset_y + 20*this.line_h ? 1 : 0
+
+    }
     this.plot()
 }
 
@@ -211,6 +233,10 @@ function plotEnemies(){
 
     for(let i=0; i<game.enemies.length; i++){
         game.enemies[i].move()
+        if(game.enemies[i].kill){
+            game.enemies.splice(i,1)
+            game.lives--
+        }
     }
 }
 
@@ -311,7 +337,7 @@ function nextLevel(){
 function newWave(){
     const nextWave = game.db.waves[game.level-1]
     for(let i=0; i<nextWave.qtd; i++){
-        game.enemies.push(new Enemy(nextWave.id_enemy,nextWave.health))
+        game.enemies.push(new Enemy(nextWave.id_enemy,nextWave.health,i%2?'h':'v'))
     }
     console.log(nextWave)
 }
