@@ -1,21 +1,41 @@
 
 class Enemy{
-    constructor(id_en=0, force=1){
+    constructor(id_en=0, health=1){
         this.id = id_en
         this.name = game.db.enemies[id_en].name
         this.background = game.db.enemies[id_en].background
         this.flying = game.db.enemies[id_en].flying
         this.imune = game.db.enemies[id_en].imune
-        this.health = game.db.enemies[id_en].health * force
-        this.speed = game.db.enemies[id_en].speed
+        this.health = game.db.enemies[id_en].health * health
+        this.speed = game.db.enemies[id_en].speed * 0.1
         this.angle = 0
-        this.x = -10
-        this.y = 150
+        this.x = -10 - Math.floor(Math.random()*50)
+        this.y = 110 + Math.floor(Math.random()*50)
+        this.sprite = new Image()
+        this.sprite.src = `assets/en_${this.name.toLowerCase()}.png`
     }
 }
 
-Enemy.prototype.move = function(){
+Enemy.prototype.plot = function(){
 
+        const cnv = document.querySelector('#enemies-field')
+        const l = this.sprite.width*0.7
+        const h = this.sprite.height*0.7
+        const angle = this.angle
+
+        if (cnv.getContext) {
+            ctx = cnv.getContext('2d');
+            ctx.save();
+            ctx.translate(this.x,this.y);
+//            ctx.rotate(Math.PI / 180 * (angle + 135))
+            ctx.drawImage(this.sprite,0,0, l, h);
+            ctx.restore(); 
+        }
+}
+
+Enemy.prototype.move = function(){
+    this.x += this.speed
+    this.plot()
 }
 
 class Weapom{
@@ -55,11 +75,11 @@ Weapom.prototype.upgrade = function(){
         if(this.level >= wep.length -1){
             this.level = wep.length -1
         }else if(wep[this.level+1].coast <= game.gold){
-            game.gold -= wep[this.level+1].coast
+            game.gold -= wep[this.level+1].coast            
             this.level++
             game.board[this.pivot[0]][this.pivot[1]].level = this.level
+            game.begin ? this.load() : null
             this.refresh()
-            this.load()
         }
     }
 }
@@ -149,6 +169,8 @@ game.clock = setInterval(()=>{
             game.time < 0 ? nextLevel() : null                
             game.time = game.time < 0 ? 0 : game.time
         }
+        plotEnemies()
+
     }else{
         game.pause = 1
         document.querySelector('#btn-start').innerHTML = 'START' 
@@ -178,6 +200,18 @@ function showAll(){
     }
 
     showRange()
+}
+
+function plotEnemies(){
+    const cnv = document.querySelector('#enemies-field')
+    if (cnv.getContext) {
+        ctx = cnv.getContext('2d');
+        ctx.clearRect(0,0,cnv.width,cnv.height)
+    }
+
+    for(let i=0; i<game.enemies.length; i++){
+        game.enemies[i].move()
+    }
 }
 
 function showRange(){
@@ -270,7 +304,16 @@ function nextLevel(){
         const next_level = game.scroll +(82 - + (game.scroll % 82))
         game.scroll = next_level
         score()
+        newWave()
     }
+}
+
+function newWave(){
+    const nextWave = game.db.waves[game.level-1]
+    for(let i=0; i<nextWave.qtd; i++){
+        game.enemies.push(new Enemy(nextWave.id_enemy,nextWave.health))
+    }
+    console.log(nextWave)
 }
 
 function spaw(id_en,qtd,force=1){
@@ -440,6 +483,7 @@ function getPosition(e){
 
 document.querySelector('#btn-start').addEventListener('click',()=>{
     game.pause = !game.pause
+    !game.begin ? newWave() : null
     game.begin = 1
     document.querySelector('#btn-start').innerHTML = game.pause ? 'START' : 'PAUSE'
 })
