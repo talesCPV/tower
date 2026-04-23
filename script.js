@@ -12,8 +12,8 @@ class Enemy{
         this.direct = direct
         this.kill = 0
 
-        this.offset_y = 38
-        this.offset_x = 46
+        this.offset_y = 30
+        this.offset_x = 40
         this.line_h = 14.2    
         this.line_w = 12.7
 
@@ -34,15 +34,23 @@ class Enemy{
 Enemy.prototype.plot = function(){
 
         const cnv = document.querySelector('#enemies-field')
-        const l = this.sprite.width*0.7
-        const h = this.sprite.height*0.7
-        const angle = this.angle
+        const scale = 0.7
+        const l = this.sprite.width*scale
+        const h = this.sprite.height*scale
+        const offset_ang = ((Math.atan2(l/2, h/2) * 180) / Math.PI) + 90
+        const angle = this.angle + 225
+
+        const center = [this.x+l/2,this.y+h/2]
+        const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
+        const sin = Number((Math.sin(Math.PI/180 * angle)).toFixed(2))
+        const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
+        const cord = [center[0]+raio*cos, center[1]+raio*sin]
 
         if (cnv.getContext) {
             ctx = cnv.getContext('2d');
             ctx.save();
-            ctx.translate(this.x,this.y);
-//            ctx.rotate(Math.PI / 180 * (angle + 135))
+            ctx.translate(cord[0]+((this.sprite.width-l)/2),cord[1]+(h/2));
+            ctx.rotate(Math.PI / 180 * (angle + offset_ang))
             ctx.drawImage(this.sprite,0,0, l, h);
             ctx.restore(); 
         }
@@ -52,10 +60,11 @@ Enemy.prototype.move = function(){
     if(this.direct == 'h'){
         this.x += this.speed
         this.kill = this.x >= this.offset_x + 26*this.line_w ? 1 : 0
+        this.angle = 0
     }else{
         this.y += this.speed
         this.kill = this.y >= this.offset_y + 20*this.line_h ? 1 : 0
-
+        this.angle = 90
     }
     this.plot()
 }
@@ -222,6 +231,13 @@ function showAll(){
     }
 
     showRange()
+}
+
+function teste(){
+    game.enemies.push(new Enemy(1)) 
+    game.enemies[0].x = 40
+    game.enemies[0].y = 30
+    game.enemies[0].plot()
 }
 
 function plotEnemies(){

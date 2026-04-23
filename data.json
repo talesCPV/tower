@@ -382,9 +382,9 @@
         }
     ],
     "waves":[
-        {   "id_enemy" : 0,
+        {   "id_enemy" : 3,
             "health" : 1,
-            "qtd" : 50,
+            "qtd" : 10,
             "boss" : 0
         },
         {   "id_enemy" : 0,
