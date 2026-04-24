@@ -11,6 +11,7 @@ class Enemy{
         this.angle = 0
         this.direct = direct
         this.kill = 0
+        this.way = []
 
         this.offset_y = 30
         this.offset_x = 40
@@ -67,6 +68,41 @@ Enemy.prototype.move = function(){
         this.angle = 90
     }
     this.plot()
+}
+
+Enemy.prototype.getWay = function(){
+    const way = new Object
+    way.path = []
+    way.pos = []
+    way.gates = this.direct == 'h' ? [7,12] : [10,17]
+
+
+    function free(pos){
+        return game.board[pos[0]][pos[1]].id < 0 ? 1 : 0
+    }
+
+    function exit(pos0,pos1){
+        const out = []
+        for(let i=0; i<4; i++){
+            try{
+                const y = i<2  ? i%2 ? pos1[0]-1 : pos1[0]+1  : pos1[0]
+                const x = i>=2 ? i%2 ? pos1[1]-1 : pos1[1]+1  : pos1[1]
+
+                if(game.board[y][x].id < 0 && (y!=pos0[0] || x!=pos0[1]) && free([y,x])){
+                    out.push([y,x])
+                }
+
+            }catch{
+                console.log('out of borders!')
+            }
+        }
+        return out
+    }
+
+
+    console.log(exit([this.y,this.x],[this.y,this.x+1]))
+
+
 }
 
 class Weapom{
