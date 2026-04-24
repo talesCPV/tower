@@ -234,10 +234,27 @@ function showAll(){
 }
 
 function teste(){
-    game.enemies.push(new Enemy(1)) 
-    game.enemies[0].x = 40
-    game.enemies[0].y = 30
-    game.enemies[0].plot()
+
+    offset_y = 30
+    offset_x = 40
+    line_h = 14.2    
+    line_w = 12.7
+
+    game.enemies.push(new Enemy(0)) 
+    game.enemies[0].x = offset_x
+    game.enemies[0].y = offset_y
+    for(let i=0; i<26; i++){
+        game.enemies[0].plot()
+        game.enemies[0].x +=line_w
+        game.enemies[0].angle +=5
+     }
+     game.enemies[0].x = offset_x
+     game.enemies[0].y = offset_y
+     for(let i=0; i<20; i++){
+        game.enemies[0].plot()
+        game.enemies[0].y +=line_h
+        game.enemies[0].angle +=5
+     }
 }
 
 function plotEnemies(){
