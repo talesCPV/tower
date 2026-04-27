@@ -169,14 +169,16 @@ class Enemy{
         this.y = 4+Math.floor(Math.random()*3)
         this.x = 0
         this.path = []
+        this.direct = direct
+        this.gates = this.direct == 'h' ? [[4,9],[5,9],[6,9]] : [[9,4],[9,5],[9,6]]
     }
 }
 
 Enemy.prototype.getWay = function(){
     const way = new Object
-    way.paths = []
+    way.path = []
     way.pos = []
-    way.gates = this.direct == 'h' ? [4,6] : [4,6]
+    way.gates = this.gates
 
 
     function free(pos){
@@ -193,43 +195,52 @@ Enemy.prototype.getWay = function(){
                     out.push([y,x])
                 }
             }catch{
-                console.log('out of borders!')
+//                console.log('out of borders!')
             }
+        }
+
+        if(player.gates[0][0] < player.gates[0][1]){
+            out.sort((a, b) => b[1] - a[1]); 
+        }else{
+            out.sort((a, b) => b[0] - a[0]); 
         }
         return out
     }
 
-
     function makeway(pos){
         const ext = exit(pos[pos.length-1])
-/*
-        for(let i=0; i<ext.length; i++){
-            ja_passei = (pos.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j])))
-
-            ja_passei ? console.log(ext,i) : null
-//            ja_passei ? ext.splice(i,1) : null
-        }
         
-
-        if(ext.length == 1){
-            console.log('end')
-        }
-*/
         for(let i=0; i<ext.length; i++){
-            ja_passei = (pos.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j])))
-            if(!ja_passei){
+            if(pos.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j]))){
+                ext.splice(i,1)
+                i--
+            }else{
+                if(way.gates.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j]))){
+                    const nw_array = JSON.parse(JSON.stringify(pos))
+                    nw_array.push(ext[i])
+                    way.path = !way.path.length || nw_array.length < way.path.length ? nw_array : way.path
+                    return
+                }
+            }
+        }
+
+        if(ext.length){
+            for(let i=0; i<ext.length; i++){
                 const nw_array = JSON.parse(JSON.stringify(pos))
                 nw_array.push(ext[i])
-                console.log(nw_array)
-                makeway(nw_array)
+                if(!way.path.length || way.path.length > nw_array.length){
+                    makeway(nw_array)
+                }
             }
         }
 
     }
 
+    way.paths = []
+
     makeway([[this.y,this.x]])
 
-    
+    console.log(way.path)
 
 }
 
