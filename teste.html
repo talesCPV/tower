@@ -5,88 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
+
+        body{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 50px;
+        }
+
+        .hide{
+            display: none;
+        }
+
         canvas{
             border: solid;
         }
+
+        .line{
+            display: flex;
+        }
+
+        .cell{
+            width: 50px;
+            height: 50px;
+            border: solid 1px;
+        }
+
+        .cell:hover{
+            background-color: #c2f0df70;
+            cursor: pointer;
+        }
+
+        .fill{
+            background-color: #5a5a5a70;
+        }
+
+        .gate{
+            background-color: #f5707070 !important;
+        }
+
+
     </style>
 </head>
 <body>
     
-    <canvas id="cnv" width="200" height="200"></canvas>
+    <canvas id="cnv" width="200" height="200" class="hide"></canvas>
 
+    <div class="ground"></div>
+    <div>
+        <label for="clear">Draw</label>
+        <input type="checkbox" id="clear">
+        <button>Run</button>
+    </div>
 </body>
 <script>
 
-//drawWeapom(138)
+    //drawWeapom(138)
 
-let a = 0
-
-
-const myInterval = setInterval(() => {
-    a++
-    drawWeapom(a)
-}, 10);
-
-circle(10)
-drawWeapom(10)
-
-function circle(ang){
-
-    const angle = ang +45
-    const offset = 50
-    const l = 50
-    const h = 50
-    const offset_ang = ((Math.atan2(l/2, h/2) * 180) / Math.PI) + 90
-
-    const center = [offset+l/2,offset+h/2]
-    const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
-    const sin = Number((Math.sin(Math.PI/180 * angle)).toFixed(2))
-    const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
-    const cord = [center[0]+raio*cos, center[1]+raio*sin]
-
-    const cnv = document.querySelector('#cnv')
-
-    if (cnv.getContext) {
-        ctx = cnv.getContext('2d')
-        ctx.clearRect(0, 0, cnv.width, cnv.height)
-
-        ctx.strokeRect(offset,offset, l, h)
-
-        ctx.save();
-        ctx.translate(cord[0],cord[1]);
-        ctx.rotate(Math.PI / 180 * (angle + offset_ang))
-
-        ctx.strokeRect(0,0, l, h)
-        ctx.restore(); 
+    let a = 0
 
 
-// PONTEIRO
-        ctx.beginPath()
-        ctx.moveTo(center[0], center[1])
-        ctx.lineTo(cord[0], cord[1])
-        ctx.stroke()
+    const myInterval = setInterval(() => {
+        a++
+        drawWeapom(a)
+    }, 10);
 
-    }
-}
+    circle(10)
+    drawWeapom(10)
 
-function drawWeapom(ang){
-
-        const cnv = document.querySelector('#cnv')
-        const base = new Image()
-        base.src = 'assets/w_base.png'
-
-        base.height = base.width
-
-
-        const arm = new Image()
-        arm.src = `assets/en_fast.png`
+    function circle(ang){
 
         const angle = ang +45
-        const offset = 0
-        const l = arm.width 
-        const h = arm.height 
+        const offset = 50
+        const l = 50
+        const h = 50
         const offset_ang = ((Math.atan2(l/2, h/2) * 180) / Math.PI) + 90
-        const scale = cnv.width / base.width
 
         const center = [offset+l/2,offset+h/2]
         const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
@@ -94,29 +88,233 @@ function drawWeapom(ang){
         const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
         const cord = [center[0]+raio*cos, center[1]+raio*sin]
 
-//console.log(l,h,scale,base.width,base.height,cnv.width,cnv.height )
+        const cnv = document.querySelector('#cnv')
 
         if (cnv.getContext) {
-            ctx = cnv.getContext('2d');
+            ctx = cnv.getContext('2d')
             ctx.clearRect(0, 0, cnv.width, cnv.height)
-//            ctx.drawImage(base,offset,offset, base.width, base.height)
+
+            ctx.strokeRect(offset,offset, l, h)
+
             ctx.save();
-            ctx.scale(scale,scale)
-            ctx.drawImage(base,offset,offset, base.width, base.height)
-            ctx.translate(cord[0]+((base.width-l)/2),cord[1]+((base.height-h)/2));
+            ctx.translate(cord[0],cord[1]);
             ctx.rotate(Math.PI / 180 * (angle + offset_ang))
+
             ctx.strokeRect(0,0, l, h)
-            ctx.drawImage(arm,0,0, l, h);
             ctx.restore(); 
-        }
+
 
     // PONTEIRO
-        ctx.beginPath()
-        ctx.moveTo(center[0], center[1])
-        ctx.lineTo(cord[0], cord[1])
-        ctx.stroke()
+            ctx.beginPath()
+            ctx.moveTo(center[0], center[1])
+            ctx.lineTo(cord[0], cord[1])
+            ctx.stroke()
+
+        }
+    }
+
+    function drawWeapom(ang){
+
+            const cnv = document.querySelector('#cnv')
+            const base = new Image()
+            base.src = 'assets/w_base.png'
+
+            base.height = base.width
+
+
+            const arm = new Image()
+            arm.src = `assets/en_fast.png`
+
+            const angle = ang +45
+            const offset = 0
+            const l = arm.width 
+            const h = arm.height 
+            const offset_ang = ((Math.atan2(l/2, h/2) * 180) / Math.PI) + 90
+            const scale = cnv.width / base.width
+
+            const center = [offset+l/2,offset+h/2]
+            const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
+            const sin = Number((Math.sin(Math.PI/180 * angle)).toFixed(2))
+            const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
+            const cord = [center[0]+raio*cos, center[1]+raio*sin]
+
+    //console.log(l,h,scale,base.width,base.height,cnv.width,cnv.height )
+
+            if (cnv.getContext) {
+                ctx = cnv.getContext('2d');
+                ctx.clearRect(0, 0, cnv.width, cnv.height)
+    //            ctx.drawImage(base,offset,offset, base.width, base.height)
+                ctx.save();
+                ctx.scale(scale,scale)
+                ctx.drawImage(base,offset,offset, base.width, base.height)
+                ctx.translate(cord[0]+((base.width-l)/2),cord[1]+((base.height-h)/2));
+                ctx.rotate(Math.PI / 180 * (angle + offset_ang))
+                ctx.strokeRect(0,0, l, h)
+                ctx.drawImage(arm,0,0, l, h);
+                ctx.restore(); 
+            }
+
+        // PONTEIRO
+            ctx.beginPath()
+            ctx.moveTo(center[0], center[1])
+            ctx.lineTo(cord[0], cord[1])
+            ctx.stroke()
+
+        }
+
+/*  PATH WAY  */
+
+class Enemy{
+    constructor(direct = 'h'){        
+        this.y = 4+Math.floor(Math.random()*3)
+        this.x = 0
+        this.path = []
+    }
+}
+
+Enemy.prototype.getWay = function(){
+    const way = new Object
+    way.paths = []
+    way.pos = []
+    way.gates = this.direct == 'h' ? [4,6] : [4,6]
+
+
+    function free(pos){
+        return game.board[pos[0]][pos[1]].id < 0 ? 1 : 0
+    }
+
+    function exit(pos){
+        const out = []
+        for(let i=0; i<4; i++){
+            try{
+                const y = i<2  ? i%2 ? pos[0]-1 : pos[0]+1  : pos[0]
+                const x = i>=2 ? i%2 ? pos[1]-1 : pos[1]+1  : pos[1]
+                if(free([y,x])){
+                    out.push([y,x])
+                }
+            }catch{
+                console.log('out of borders!')
+            }
+        }
+        return out
+    }
+
+
+    function makeway(pos){
+        const ext = exit(pos[pos.length-1])
+/*
+        for(let i=0; i<ext.length; i++){
+            ja_passei = (pos.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j])))
+
+            ja_passei ? console.log(ext,i) : null
+//            ja_passei ? ext.splice(i,1) : null
+        }
+        
+
+        if(ext.length == 1){
+            console.log('end')
+        }
+*/
+        for(let i=0; i<ext.length; i++){
+            ja_passei = (pos.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j])))
+            if(!ja_passei){
+                const nw_array = JSON.parse(JSON.stringify(pos))
+                nw_array.push(ext[i])
+                console.log(nw_array)
+                makeway(nw_array)
+            }
+        }
 
     }
+
+    makeway([[this.y,this.x]])
+
+    
+
+}
+
+
+        function start(){
+            createField()
+            console.log(player)
+
+        }
+
+
+const game = new Object
+const player = new Enemy()
+
+        function createField(){
+            const gnd = document.querySelector('.ground')
+            gnd.innerHTML = ''
+            game.board=[]
+            for(let y=0; y<10; y++){
+                const line = document.createElement('div')
+                line.className = 'line'
+                gnd.appendChild(line)
+                game.board.push([])
+                for(let x=0; x<10; x++){
+                    const rand =  Math.floor(Math.random()*2)
+                    const obj = new Object
+                    obj.id = rand ? 1 : -1
+
+                    game.board[game.board.length-1].push(obj)
+                    const cel = document.createElement('div')
+                    cel.className = 'cell'
+                    rand ? cel.classList.add('fill') : null
+                    cel.id = `cel-${y}-${x}`
+                    line.appendChild(cel)
+
+                    if([4,5,6].includes(y)){
+                        if([0,9].includes(x)){
+                            cel.classList.add('gate')
+                            cel.classList.remove('fill')
+                            game.board[y][x].id = -1
+                        }
+                    }
+
+                    cel.addEventListener('click',()=>{
+                        if(document.querySelector('#clear').checked){
+
+                            if(game.board[y][x].id < 0 && !cel.classList.contains('gate')){
+                                cel.classList.add('fill')
+                                game.board[y][x].id = 1
+                            }else{
+                                cel.classList.remove('fill')
+                                game.board[y][x].id = -1
+                            }
+
+                        }else{
+                            console.log(game.board[y][x].id)
+                        }
+                    })
+
+                }
+            }
+            console.log(game)
+        }
+
+
+
+        Enemy.prototype.move = function(){
+    if(this.direct == 'h'){
+        this.x += this.speed
+        this.kill = this.x >= this.offset_x + 26*this.line_w ? 1 : 0
+        this.angle = 0
+    }else{
+        this.y += this.speed
+        this.kill = this.y >= this.offset_y + 20*this.line_h ? 1 : 0
+        this.angle = 90
+    }
+    this.plot()
+}
+
+
+
+
+
+        start()
+
 
 </script>
 </html>
