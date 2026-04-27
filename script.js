@@ -10,6 +10,12 @@ class Enemy{
         this.speed = game.db.enemies[id_en].speed * 0.1
         this.angle = 0
         this.direct = direct
+
+        this.sq = [game.board.length,game.board[0].length]
+        this.gates = direct == 'h' ? [[7,25],[8,25],[9,25],[10,25],[11,25],[12,25]] : [[19,10],[19,11],[19,12],[19,13],[19,14],[19,15],[19,16],[19,17]]
+
+        
+
         this.kill = 0
         this.way = []
 
@@ -71,36 +77,8 @@ Enemy.prototype.move = function(){
 }
 
 Enemy.prototype.getWay = function(){
-    const way = new Object
-    way.path = []
-    way.pos = []
-    way.gates = this.direct == 'h' ? [7,12] : [10,17]
 
-
-    function free(pos){
-        return game.board[pos[0]][pos[1]].id < 0 ? 1 : 0
-    }
-
-    function exit(pos0,pos1){
-        const out = []
-        for(let i=0; i<4; i++){
-            try{
-                const y = i<2  ? i%2 ? pos1[0]-1 : pos1[0]+1  : pos1[0]
-                const x = i>=2 ? i%2 ? pos1[1]-1 : pos1[1]+1  : pos1[1]
-
-                if(game.board[y][x].id < 0 && (y!=pos0[0] || x!=pos0[1]) && free([y,x])){
-                    out.push([y,x])
-                }
-
-            }catch{
-                console.log('out of borders!')
-            }
-        }
-        return out
-    }
-
-
-    console.log(exit([this.y,this.x],[this.y,this.x+1]))
+    console.log(this.x, this.y)
 
 
 }
@@ -269,6 +247,7 @@ function showAll(){
     showRange()
 }
 
+
 function teste(){
 
     offset_y = 30
@@ -291,6 +270,66 @@ function teste(){
         game.enemies[0].y +=line_h
         game.enemies[0].angle +=5
      }
+}
+
+function getway(y,x,gates){
+
+    let path = []
+
+    function free(pos){
+        return game.board[pos[0]][pos[1]].id < 0 ? 1 : 0
+    }
+
+    function exit(pos){
+        const out = []
+        for(let i=0; i<4; i++){
+            try{
+                const y = i<2  ? i%2 ? pos[0]-1 : pos[0]+1  : pos[0]
+                const x = i>=2 ? i%2 ? pos[1]-1 : pos[1]+1  : pos[1]
+                if(free([y,x])){
+                    out.push([y,x])
+                }
+            }catch{null}
+        }
+
+        if(gates[0][0] < gates[0][1]){
+            out.sort((a, b) => b[1] - a[1]); 
+        }else{
+            out.sort((a, b) => b[0] - a[0]); 
+        }
+        return out
+    }
+
+    function makeway(pos){
+        const ext = exit(pos[pos.length-1])
+        
+        for(let i=0; i<ext.length; i++){
+            if(pos.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j]))){
+                ext.splice(i,1)
+                i--
+            }else{
+                if(gates.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j]))){
+                    const nw_array = JSON.parse(JSON.stringify(pos))
+                    nw_array.push(ext[i])
+                    path = !path.length || nw_array.length < path.length ? nw_array : path
+                    return
+                }
+            }
+        }
+
+        if(ext.length){
+            for(let i=0; i<ext.length; i++){
+                const nw_array = JSON.parse(JSON.stringify(pos))
+                nw_array.push(ext[i])
+                if(!path.length || path.length > nw_array.length){
+                    makeway(nw_array)
+                }
+            }
+        }
+
+    }
+    makeway([[y,x]])
+    return path
 }
 
 function plotEnemies(){
