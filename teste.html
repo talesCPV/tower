@@ -27,8 +27,8 @@
         }
 
         .cell{
-            width: 50px;
-            height: 50px;
+            width: 25px;
+            height: 25px;
             border: solid 1px;
         }
 
@@ -45,6 +45,9 @@
             background-color: #f5707070 !important;
         }
 
+        .path{
+            background-color: #70f59c70 !important;
+        }
 
     </style>
 </head>
@@ -56,7 +59,7 @@
     <div>
         <label for="clear">Draw</label>
         <input type="checkbox" id="clear">
-        <button>Run</button>
+        <button id="run">Run</button>
     </div>
 </body>
 <script>
@@ -166,20 +169,23 @@
 
 class Enemy{
     constructor(direct = 'h'){        
-        this.y = 4+Math.floor(Math.random()*3)
+        const square = 20
+        const gt = Math.floor(square/2)
+        this.y = gt-1 +Math.floor(Math.random()*3)
         this.x = 0
         this.path = []
         this.direct = direct
-        this.gates = this.direct == 'h' ? [[4,9],[5,9],[6,9]] : [[9,4],[9,5],[9,6]]
+        this.gates = this.direct == 'h' ? [[gt-1,square-1],[gt,square-1],[gt+1,square-1]] : [[square-1,gt-1],[square-1,gt],[square-1,gt+1]]
     }
 }
 
 Enemy.prototype.getWay = function(){
-    const way = new Object
-    way.path = []
-    way.pos = []
-    way.gates = this.gates
 
+}
+
+function getway(y,x,gates){
+
+    let path = []
 
     function free(pos){
         return game.board[pos[0]][pos[1]].id < 0 ? 1 : 0
@@ -194,12 +200,10 @@ Enemy.prototype.getWay = function(){
                 if(free([y,x])){
                     out.push([y,x])
                 }
-            }catch{
-//                console.log('out of borders!')
-            }
+            }catch{null}
         }
 
-        if(player.gates[0][0] < player.gates[0][1]){
+        if(gates[0][0] < gates[0][1]){
             out.sort((a, b) => b[1] - a[1]); 
         }else{
             out.sort((a, b) => b[0] - a[0]); 
@@ -215,10 +219,10 @@ Enemy.prototype.getWay = function(){
                 ext.splice(i,1)
                 i--
             }else{
-                if(way.gates.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j]))){
+                if(gates.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j]))){
                     const nw_array = JSON.parse(JSON.stringify(pos))
                     nw_array.push(ext[i])
-                    way.path = !way.path.length || nw_array.length < way.path.length ? nw_array : way.path
+                    path = !path.length || nw_array.length < path.length ? nw_array : path
                     return
                 }
             }
@@ -228,43 +232,40 @@ Enemy.prototype.getWay = function(){
             for(let i=0; i<ext.length; i++){
                 const nw_array = JSON.parse(JSON.stringify(pos))
                 nw_array.push(ext[i])
-                if(!way.path.length || way.path.length > nw_array.length){
+                if(!path.length || path.length > nw_array.length){
                     makeway(nw_array)
                 }
             }
         }
 
     }
-
-    way.paths = []
-
-    makeway([[this.y,this.x]])
-
-    console.log(way.path)
-
+    makeway([[y,x]])
+    return path
 }
 
 
-        function start(){
-            createField()
-            console.log(player)
+function start(){
+    createField()
+    console.log(player)
 
-        }
+}
 
 
 const game = new Object
 const player = new Enemy()
 
         function createField(){
+            const square = 20
+
             const gnd = document.querySelector('.ground')
             gnd.innerHTML = ''
             game.board=[]
-            for(let y=0; y<10; y++){
+            for(let y=0; y<square; y++){
                 const line = document.createElement('div')
                 line.className = 'line'
                 gnd.appendChild(line)
                 game.board.push([])
-                for(let x=0; x<10; x++){
+                for(let x=0; x<square; x++){
                     const rand =  Math.floor(Math.random()*2)
                     const obj = new Object
                     obj.id = rand ? 1 : -1
@@ -276,8 +277,10 @@ const player = new Enemy()
                     cel.id = `cel-${y}-${x}`
                     line.appendChild(cel)
 
-                    if([4,5,6].includes(y)){
-                        if([0,9].includes(x)){
+                    const gt = Math.floor(square/2)
+
+                    if([gt-1,gt,gt+1].includes(y)){
+                        if([0,square-1].includes(x)){
                             cel.classList.add('gate')
                             cel.classList.remove('fill')
                             game.board[y][x].id = -1
@@ -306,22 +309,21 @@ const player = new Enemy()
         }
 
 
+    document.querySelector('#run').addEventListener('click',()=>{
 
-        Enemy.prototype.move = function(){
-    if(this.direct == 'h'){
-        this.x += this.speed
-        this.kill = this.x >= this.offset_x + 26*this.line_w ? 1 : 0
-        this.angle = 0
-    }else{
-        this.y += this.speed
-        this.kill = this.y >= this.offset_y + 20*this.line_h ? 1 : 0
-        this.angle = 90
-    }
-    this.plot()
-}
+        for(let y=0; y<game.board.length; y++){
+            for(let x=0; x<game.board[y].length; x++){
+                document.querySelector(`#cel-${y}-${x}`).classList.remove('path')
+            }
+        }
 
+        const path = getway(player.y,player.x,player.gates)
 
+        for(let i=0; i<path.length; i++){
+            document.querySelector(`#cel-${path[i][0]}-${path[i][1]}`).classList.add('path')
+        }
 
+    })
 
 
         start()
