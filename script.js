@@ -9,12 +9,7 @@ class Enemy{
         this.health = game.db.enemies[id_en].health * health
         this.speed = game.db.enemies[id_en].speed * 0.1
         this.angle = 0
-        this.direct = direct
-
-        this.sq = [game.board.length,game.board[0].length]
-        this.gates = direct == 'h' ? [[7,25],[8,25],[9,25],[10,25],[11,25],[12,25]] : [[19,10],[19,11],[19,12],[19,13],[19,14],[19,15],[19,16],[19,17]]
-
-        
+        this.direct = direct        
 
         this.kill = 0
         this.way = []
@@ -272,7 +267,10 @@ function teste(){
      }
 }
 
-function getway(y,x,gates){
+function getway(y,x,direct='h'){
+
+    const sqrt = [game.board.length-1,game.board[0].length-1]
+    const gates = direct == 'h' ? [[7,sqrt[1]],[8,sqrt[1]],[9,sqrt[1]],[10,sqrt[1]],[11,sqrt[1]],[12,sqrt[1]]] : [[sqrt[0],10],[sqrt[0],11],[sqrt[0],12],[sqrt[0],13],[sqrt[0],14],[sqrt[0],15],[sqrt[0],16],[sqrt[0],17]]
 
     let path = []
 
@@ -292,7 +290,7 @@ function getway(y,x,gates){
             }catch{null}
         }
 
-        if(gates[0][0] < gates[0][1]){
+        if(direct == 'h'){
             out.sort((a, b) => b[1] - a[1]); 
         }else{
             out.sort((a, b) => b[0] - a[0]); 
@@ -302,18 +300,16 @@ function getway(y,x,gates){
 
     function makeway(pos){
         const ext = exit(pos[pos.length-1])
-        
+console.log(pos)        
         for(let i=0; i<ext.length; i++){
             if(pos.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j]))){
                 ext.splice(i,1)
                 i--
-            }else{
-                if(gates.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j]))){
+            }else if(gates.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j]))){
                     const nw_array = JSON.parse(JSON.stringify(pos))
                     nw_array.push(ext[i])
                     path = !path.length || nw_array.length < path.length ? nw_array : path
                     return
-                }
             }
         }
 
@@ -448,10 +444,6 @@ function newWave(){
         game.enemies.push(new Enemy(nextWave.id_enemy,nextWave.health,i%2?'h':'v'))
     }
     console.log(nextWave)
-}
-
-function spaw(id_en,qtd,force=1){
-
 }
 
 function score(){

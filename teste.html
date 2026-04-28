@@ -169,13 +169,10 @@
 
 class Enemy{
     constructor(direct = 'h'){        
-        const square = 20
-        const gt = Math.floor(square/2)
-        this.y = gt-1 +Math.floor(Math.random()*3)
+        this.y = 7 +Math.floor(Math.random()*3)
         this.x = 0
         this.path = []
         this.direct = direct
-        this.gates = this.direct == 'h' ? [[gt-1,square-1],[gt,square-1],[gt+1,square-1]] : [[square-1,gt-1],[square-1,gt],[square-1,gt+1]]
     }
 }
 
@@ -183,9 +180,28 @@ Enemy.prototype.getWay = function(){
 
 }
 
-function getway(y,x,gates){
+function clear(){
+    for(let y=0; y<game.board.length; y++){
+        for(let x=0; x<game.board[y].length; x++){
+            document.querySelector(`#cel-${y}-${x}`).classList.remove('fill')
+            game.board[y][x].id = -1
+        }
+    }
+}
+
+function getway(y,x,direct='h'){
+
+    const sqrt = [game.board.length-1,game.board[0].length-1]
+//    const gates = direct == 'h' ? [[7,sqrt[1]],[8,sqrt[1]],[9,sqrt[1]],[10,sqrt[1]],[11,sqrt[1]],[12,sqrt[1]]] : [[sqrt[0],10],[sqrt[0],11],[sqrt[0],12],[sqrt[0],13],[sqrt[0],14],[sqrt[0],15],[sqrt[0],16],[sqrt[0],17]]
+    const gates = direct == 'h' ? [[9,sqrt[1]],[10,sqrt[1]],[11,sqrt[1]]] : [[sqrt[0],10],[sqrt[0],11],[sqrt[0],9]]
+
 
     let path = []
+
+    function flood(){
+
+    }
+
 
     function free(pos){
         return game.board[pos[0]][pos[1]].id < 0 ? 1 : 0
@@ -203,7 +219,7 @@ function getway(y,x,gates){
             }catch{null}
         }
 
-        if(gates[0][0] < gates[0][1]){
+        if(direct == 'h'){
             out.sort((a, b) => b[1] - a[1]); 
         }else{
             out.sort((a, b) => b[0] - a[0]); 
@@ -213,7 +229,7 @@ function getway(y,x,gates){
 
     function makeway(pos){
         const ext = exit(pos[pos.length-1])
-        
+//console.log(ext)        
         for(let i=0; i<ext.length; i++){
             if(pos.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j]))){
                 ext.splice(i,1)
@@ -233,6 +249,7 @@ function getway(y,x,gates){
                 const nw_array = JSON.parse(JSON.stringify(pos))
                 nw_array.push(ext[i])
                 if(!path.length || path.length > nw_array.length){
+                    console.log(nw_array.length)
                     makeway(nw_array)
                 }
             }
@@ -243,6 +260,85 @@ function getway(y,x,gates){
     return path
 }
 
+
+function bts(ini){
+
+    const queue = [setObj(ini,0)]
+    let best = []
+
+
+    function setObj(pos,order, parent=null){
+        const out = new Object
+        out.parent = parent
+        out.order = order
+        out.pos = pos
+        return out
+    }
+
+    function free(pos){
+        return game.board[pos[0]][pos[1]].id < 0 ? 1 : 0
+    }
+
+    function has(pos){
+        for(let i=0; i<queue.length; i++){
+            if(queue[i].pos[0] == pos[0] && queue[i].pos[1] == pos[1]){
+                return 1
+            }
+        }
+        return 0
+    }
+
+    function ending(pos){
+        end = game.gate
+        if(end.some(arr => arr.length === pos.length && arr.every((val, i) => val === pos[i]))){
+            return 1
+        }
+        return 0
+    }
+
+    function getWayBack(index){
+
+        for(let i = index; i>=0; i--){
+
+        }
+
+    }
+
+    function neighbors(pos){
+        const out = []
+        for(let i=0; i<4; i++){
+            try{
+                const y = i<2  ? i%2 ? pos[0]-1 : pos[0]+1  : pos[0]
+                const x = i>=2 ? i%2 ? pos[1]-1 : pos[1]+1  : pos[1]
+                if(!has([y,x]) && free([y,x])){
+                    out.push([y,x])
+                }
+            }catch{null}
+        }
+        return out
+    }
+
+
+    let p=0
+
+    while(p<queue.length){
+        const ngb = neighbors(queue[p].pos)
+        for(let i=0; i<ngb.length; i++){
+            queue.push(setObj(ngb[i],queue[p].order+1,queue[p].pos))
+            console.log(queue[p].pos)
+            if(ending(queue[p].pos)){
+                console.log(queue)
+                console.log('chegou!!')
+                p = queue.length+1
+            }
+
+        }
+        p++
+    }
+
+    console.log(queue)
+
+}
 
 function start(){
     createField()
@@ -255,17 +351,17 @@ const game = new Object
 const player = new Enemy()
 
         function createField(){
-            const square = 20
+            game.square = 20
 
             const gnd = document.querySelector('.ground')
             gnd.innerHTML = ''
             game.board=[]
-            for(let y=0; y<square; y++){
+            for(let y=0; y<game.square; y++){
                 const line = document.createElement('div')
                 line.className = 'line'
                 gnd.appendChild(line)
                 game.board.push([])
-                for(let x=0; x<square; x++){
+                for(let x=0; x<game.square; x++){
                     const rand =  Math.floor(Math.random()*2)
                     const obj = new Object
                     obj.id = rand ? 1 : -1
@@ -277,10 +373,11 @@ const player = new Enemy()
                     cel.id = `cel-${y}-${x}`
                     line.appendChild(cel)
 
-                    const gt = Math.floor(square/2)
+                    const gt = Math.floor(game.square/2)
+                    game.gate = [[gt-1,game.square-1],[gt,game.square-1],[gt+1,game.square-1]]
 
                     if([gt-1,gt,gt+1].includes(y)){
-                        if([0,square-1].includes(x)){
+                        if([0,game.square-1].includes(x)){
                             cel.classList.add('gate')
                             cel.classList.remove('fill')
                             game.board[y][x].id = -1
@@ -310,6 +407,9 @@ const player = new Enemy()
 
 
     document.querySelector('#run').addEventListener('click',()=>{
+        bts([player.y,player.x])
+
+/*
 
         for(let y=0; y<game.board.length; y++){
             for(let x=0; x<game.board[y].length; x++){
@@ -317,12 +417,14 @@ const player = new Enemy()
             }
         }
 
-        const path = getway(player.y,player.x,player.gates)
+        player.path = getway(player.y,player.x,player.direct)
 
-        for(let i=0; i<path.length; i++){
-            document.querySelector(`#cel-${path[i][0]}-${path[i][1]}`).classList.add('path')
+        console.log(player.path)
+
+        for(let i=0; i<player.path.length; i++){
+            document.querySelector(`#cel-${player.path[i][0]}-${player.path[i][1]}`).classList.add('path')
         }
-
+*/
     })
 
 
