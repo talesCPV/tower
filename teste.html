@@ -60,6 +60,7 @@
         <label for="clear">Draw</label>
         <input type="checkbox" id="clear">
         <button id="run">Run</button>
+        <button id="clean">Clear</button>
     </div>
 </body>
 <script>
@@ -189,83 +190,8 @@ function clear(){
     }
 }
 
-function getway(y,x,direct='h'){
-
-    const sqrt = [game.board.length-1,game.board[0].length-1]
-//    const gates = direct == 'h' ? [[7,sqrt[1]],[8,sqrt[1]],[9,sqrt[1]],[10,sqrt[1]],[11,sqrt[1]],[12,sqrt[1]]] : [[sqrt[0],10],[sqrt[0],11],[sqrt[0],12],[sqrt[0],13],[sqrt[0],14],[sqrt[0],15],[sqrt[0],16],[sqrt[0],17]]
-    const gates = direct == 'h' ? [[9,sqrt[1]],[10,sqrt[1]],[11,sqrt[1]]] : [[sqrt[0],10],[sqrt[0],11],[sqrt[0],9]]
-
-
-    let path = []
-
-    function flood(){
-
-    }
-
-
-    function free(pos){
-        return game.board[pos[0]][pos[1]].id < 0 ? 1 : 0
-    }
-
-    function exit(pos){
-        const out = []
-        for(let i=0; i<4; i++){
-            try{
-                const y = i<2  ? i%2 ? pos[0]-1 : pos[0]+1  : pos[0]
-                const x = i>=2 ? i%2 ? pos[1]-1 : pos[1]+1  : pos[1]
-                if(free([y,x])){
-                    out.push([y,x])
-                }
-            }catch{null}
-        }
-
-        if(direct == 'h'){
-            out.sort((a, b) => b[1] - a[1]); 
-        }else{
-            out.sort((a, b) => b[0] - a[0]); 
-        }
-        return out
-    }
-
-    function makeway(pos){
-        const ext = exit(pos[pos.length-1])
-//console.log(ext)        
-        for(let i=0; i<ext.length; i++){
-            if(pos.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j]))){
-                ext.splice(i,1)
-                i--
-            }else{
-                if(gates.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j]))){
-                    const nw_array = JSON.parse(JSON.stringify(pos))
-                    nw_array.push(ext[i])
-                    path = !path.length || nw_array.length < path.length ? nw_array : path
-                    return
-                }
-            }
-        }
-
-        if(ext.length){
-            for(let i=0; i<ext.length; i++){
-                const nw_array = JSON.parse(JSON.stringify(pos))
-                nw_array.push(ext[i])
-                if(!path.length || path.length > nw_array.length){
-                    console.log(nw_array.length)
-                    makeway(nw_array)
-                }
-            }
-        }
-
-    }
-    makeway([[y,x]])
-    return path
-}
-
-
-function bts(ini){
-
+function getway(ini){
     const queue = [setObj(ini,0)]
-    let best = []
-
 
     function setObj(pos,order, parent=null){
         const out = new Object
@@ -289,19 +215,17 @@ function bts(ini){
     }
 
     function ending(pos){
-        end = game.gate
-        if(end.some(arr => arr.length === pos.length && arr.every((val, i) => val === pos[i]))){
-            return 1
-        }
-        return 0
+        return game.gate.some(arr => arr.length === pos.length && arr.every((val, i) => val === pos[i]))
     }
 
-    function getWayBack(index){
-
-        for(let i = index; i>=0; i--){
-
+    function getWayBack(){
+        const path = [queue[queue.length-1]]
+        for(let i=queue.length-2; i>=0; i--){
+            if(JSON.stringify(path[path.length-1].parent)==JSON.stringify(queue[i].pos)){
+                path.push(queue[i])
+            }
         }
-
+        return path
     }
 
     function neighbors(pos){
@@ -318,26 +242,20 @@ function bts(ini){
         return out
     }
 
-
     let p=0
-
     while(p<queue.length){
         const ngb = neighbors(queue[p].pos)
         for(let i=0; i<ngb.length; i++){
-            queue.push(setObj(ngb[i],queue[p].order+1,queue[p].pos))
-            console.log(queue[p].pos)
-            if(ending(queue[p].pos)){
-                console.log(queue)
-                console.log('chegou!!')
-                p = queue.length+1
+            const next = setObj(ngb[i],queue[p].order+1,queue[p].pos)
+            queue.push(next)
+            if(ending(ngb[i])){
+                return getWayBack()
             }
-
         }
         p++
     }
 
-    console.log(queue)
-
+    return []
 }
 
 function start(){
@@ -405,30 +323,25 @@ const player = new Enemy()
             console.log(game)
         }
 
-
     document.querySelector('#run').addEventListener('click',()=>{
-        bts([player.y,player.x])
-
-/*
-
+        const bestway = getway([player.y,player.x])
         for(let y=0; y<game.board.length; y++){
             for(let x=0; x<game.board[y].length; x++){
                 document.querySelector(`#cel-${y}-${x}`).classList.remove('path')
             }
         }
 
-        player.path = getway(player.y,player.x,player.direct)
-
-        console.log(player.path)
-
-        for(let i=0; i<player.path.length; i++){
-            document.querySelector(`#cel-${player.path[i][0]}-${player.path[i][1]}`).classList.add('path')
+        for(let i=0; i<bestway.length; i++){
+            document.querySelector(`#cel-${bestway[i].pos[0]}-${bestway[i].pos[1]}`).classList.add('path')
         }
-*/
+
     })
 
+    document.querySelector('#clean').addEventListener('click',()=>{
+        clear()
+    })
 
-        start()
+    start()
 
 
 </script>
