@@ -71,9 +71,9 @@ Enemy.prototype.move = function(){
     this.plot()
 }
 
-Enemy.prototype.getWay = function(){
+Enemy.prototype.getaway = function(){
 
-    console.log(this.x, this.y)
+    this.way = getaway([this.y,this.x],this.direct)
 
 
 }
@@ -197,6 +197,7 @@ class Bullet{
 
 const game = new Object
 
+
 game.clock = setInterval(()=>{
     if(!game.pause && game.scroll < 4098 ){
         game.count++
@@ -267,66 +268,75 @@ function teste(){
      }
 }
 
-function getway(y,x,direct='h'){
+function getaway(ini,direct='h'){
+    const queue = [setObj(ini,0)]
+    const gate = direct=='h' ? [[8,25],[9,25],[10,25],[11,25],[12,25],[13,25]] : [[10,19],[11,19],[12,19],[13,19],[14,19],[15,19],[16,19],[17,19]]
 
-    const sqrt = [game.board.length-1,game.board[0].length-1]
-    const gates = direct == 'h' ? [[7,sqrt[1]],[8,sqrt[1]],[9,sqrt[1]],[10,sqrt[1]],[11,sqrt[1]],[12,sqrt[1]]] : [[sqrt[0],10],[sqrt[0],11],[sqrt[0],12],[sqrt[0],13],[sqrt[0],14],[sqrt[0],15],[sqrt[0],16],[sqrt[0],17]]
-
-    let path = []
+    function setObj(pos,order, parent=null){
+        const out = new Object
+        out.parent = parent
+        out.order = order
+        out.pos = pos
+        return out
+    }
 
     function free(pos){
         return game.board[pos[0]][pos[1]].id < 0 ? 1 : 0
     }
 
-    function exit(pos){
+    function has(pos){
+        for(let i=0; i<queue.length; i++){
+            if(queue[i].pos[0] == pos[0] && queue[i].pos[1] == pos[1]){
+                return 1
+            }
+        }
+        return 0
+    }
+
+    function ending(pos){
+        return gate.some(arr => arr.length === pos.length && arr.every((val, i) => val === pos[i]))
+    }
+
+    function getWayBack(){
+        const path = [queue[queue.length-1]]
+        for(let i=queue.length-2; i>=0; i--){
+            if(JSON.stringify(path[path.length-1].parent)==JSON.stringify(queue[i].pos)){
+                path.push(queue[i])
+            }
+        }
+        return path
+    }
+
+    function neighbors(pos){
         const out = []
         for(let i=0; i<4; i++){
             try{
                 const y = i<2  ? i%2 ? pos[0]-1 : pos[0]+1  : pos[0]
                 const x = i>=2 ? i%2 ? pos[1]-1 : pos[1]+1  : pos[1]
-                if(free([y,x])){
+                if(!has([y,x]) && free([y,x])){
                     out.push([y,x])
                 }
             }catch{null}
         }
-
-        if(direct == 'h'){
-            out.sort((a, b) => b[1] - a[1]); 
-        }else{
-            out.sort((a, b) => b[0] - a[0]); 
-        }
         return out
     }
 
-    function makeway(pos){
-        const ext = exit(pos[pos.length-1])
-console.log(pos)        
-        for(let i=0; i<ext.length; i++){
-            if(pos.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j]))){
-                ext.splice(i,1)
-                i--
-            }else if(gates.some(arr => arr.length === ext[i].length && arr.every((val, j) => val === ext[i][j]))){
-                    const nw_array = JSON.parse(JSON.stringify(pos))
-                    nw_array.push(ext[i])
-                    path = !path.length || nw_array.length < path.length ? nw_array : path
-                    return
+    let p=0
+    while(p<queue.length){
+        const ngb = neighbors(queue[p].pos)
+        for(let i=0; i<ngb.length; i++){
+            const next = setObj(ngb[i],queue[p].order+1,queue[p].pos)
+            queue.push(next)
+            if(ending(ngb[i])){
+                return getWayBack()
             }
         }
-
-        if(ext.length){
-            for(let i=0; i<ext.length; i++){
-                const nw_array = JSON.parse(JSON.stringify(pos))
-                nw_array.push(ext[i])
-                if(!path.length || path.length > nw_array.length){
-                    makeway(nw_array)
-                }
-            }
-        }
-
+        p++
     }
-    makeway([[y,x]])
-    return path
+
+    return []
 }
+
 
 function plotEnemies(){
     const cnv = document.querySelector('#enemies-field')
