@@ -73,8 +73,11 @@ Enemy.prototype.move = function(){
 
 Enemy.prototype.getaway = function(){
 
-    this.way = getaway([this.y,this.x],this.direct)
-
+    const pos = getPos(this.y,this.x)
+    pos[0] = pos[0]<0 ? 0 : pos[0]>19 ? 19 : pos[0]
+    pos[1] = pos[1]<0 ? 0 : pos[1]>25 ? 25 : pos[1]
+    this.way = getaway(pos,this.direct)
+    console.log(pos,this.way)   
 
 }
 
@@ -268,6 +271,14 @@ function teste(){
      }
 }
 
+function getPos(y,x,offset=15){
+    const eField = document.querySelector('#enemies-field').getBoundingClientRect()
+    const wField = document.querySelector('#war-field').getBoundingClientRect()
+    const ePos = [eField.left - wField.left + x + offset, eField.top - wField.top + y + offset]
+    return [Math.floor(ePos[1]/(wField.height/20)),Math.floor(ePos[0]/(wField.width/26))]
+}
+
+
 function getaway(ini,direct='h'){
     const queue = [setObj(ini,0)]
     const gate = direct=='h' ? [[8,25],[9,25],[10,25],[11,25],[12,25],[13,25]] : [[10,19],[11,19],[12,19],[13,19],[14,19],[15,19],[16,19],[17,19]]
@@ -300,8 +311,8 @@ function getaway(ini,direct='h'){
     function getWayBack(){
         const path = [queue[queue.length-1]]
         for(let i=queue.length-2; i>=0; i--){
-            if(JSON.stringify(path[path.length-1].parent)==JSON.stringify(queue[i].pos)){
-                path.push(queue[i])
+            if(JSON.stringify(path[0].parent)==JSON.stringify(queue[i].pos)){
+                path.unshift(queue[i])
             }
         }
         return path
@@ -597,7 +608,7 @@ function setPosition(e){
 function getPosition(e){
     const obj = new Object
     const cnv = e.target
-    const bounds = e.target.getBoundingClientRect();
+    const bounds = cnv.getBoundingClientRect();
     obj.x = Math.floor((e.x - Math.floor(bounds.left) )) 
     obj.y = Math.floor((e.y - Math.floor(bounds.top))) 
     let pos = [Math.floor(obj.x/(cnv.clientWidth/26)),Math.floor(obj.y/(cnv.clientHeight/20))]
