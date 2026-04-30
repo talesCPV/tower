@@ -582,6 +582,7 @@ function buy(obj){
                     cel.pivot = [i%2,i<2?0:1]
                     cel.index = wep.level ? cel.index : game.weapons.length                
                 }
+console.log(blocking())
                 game.weapons.push(wep)
                 obj.has = 1
                 game.weapons[game.weapons.length-1].plot()            
