@@ -9,7 +9,8 @@ class Enemy{
         this.health = game.db.enemies[id_en].health * health
         this.speed = game.db.enemies[id_en].speed * 0.1
         this.angle = 0
-        this.direct = direct        
+        this.direct = direct
+        this.gate = game.gate[direct=='h' ? 1 : 0]  
 
         this.kill = 0
         this.way = []
@@ -71,13 +72,40 @@ Enemy.prototype.move = function(){
     this.plot()
 }
 
+Enemy.prototype.getPos = function(){
+    offset = [this.sprite.height,this.sprite.width]
+    const eField = document.querySelector('#enemies-field').getBoundingClientRect()
+    const wField = document.querySelector('#war-field').getBoundingClientRect()
+    const ePos = [eField.top - wField.top + this.y + offset[0],eField.left - wField.left + this.x + offset[1]]
+    this.pos = [Math.floor(ePos[0]/(wField.height/20)),Math.floor(ePos[1]/(wField.width/26))]
+    this.pos[0] = this.pos[0]<0 ? 0 : this.pos[0]>19 ? 19 : this.pos[0]
+    this.pos[1] = this.pos[1]<0 ? 0 : this.pos[1]>25 ? 25 : this.pos[1]
+}
+
 Enemy.prototype.getaway = function(){
 
-    const pos = getPos(this.y,this.x)
-    pos[0] = pos[0]<0 ? 0 : pos[0]>19 ? 19 : pos[0]
-    pos[1] = pos[1]<0 ? 0 : pos[1]>25 ? 25 : pos[1]
-    this.way = getaway(pos,this.direct)
-    console.log(pos,this.way)   
+    this.getPos()
+    let scape = []
+
+    if(game.board[this.pos[0]][this.pos[1]].id >= 0){
+        for(let i=0; i<this.gate.length; i++){            
+            const p = [this.pos[0]?this.gate[i][0]:this.pos[0],this.pos[1]?this.gate[i][1]:this.pos[1]]
+            if(game.board[p[0]][p[1]].id < 0){
+                scape =  !scape.length? p : p[0] ? ((Math.abs(scape[0]-this.pos[0]) < Math.abs(p[0]-this.pos[0])) ? scape : p) : (Math.abs(scape[1]-this.pos[1]) < Math.abs(p[1]-this.pos[1])) ? scape : p
+                this.way = getaway(scape,this.gate)                 
+
+                console.log('FREE ',this.pos,scape)
+            }
+        }
+    }else{
+        this.way = getaway(this.pos,this.gate)
+    }
+
+    
+
+
+
+    console.log(this.pos,this.way)   
 
 }
 
@@ -246,6 +274,28 @@ function showAll(){
     showRange()
 }
 
+function blocking(){
+
+    function sentido(gate){
+        vert = gate[0][0] == gate[1][0]
+        const out = 1
+        const entrace = []
+        for(let i=0; i<gate.length; i++){
+            const pos = [vert ? 0 : gate[i][0],vert ? gate[i][1]:0]
+            if(game.board[pos[0]][pos[1]].id < 0){
+                entrace.push(pos)
+                const len = getaway(pos,gate).length
+                if(!len){
+                    console.log('blocking!!!')
+                    return 1
+                }
+            }  
+        }
+        return 0
+    }
+
+    return sentido(game.gate[0]) ? 1 : sentido(game.gate[1])
+}
 
 function teste(){
 
@@ -271,17 +321,9 @@ function teste(){
      }
 }
 
-function getPos(y,x,offset=15){
-    const eField = document.querySelector('#enemies-field').getBoundingClientRect()
-    const wField = document.querySelector('#war-field').getBoundingClientRect()
-    const ePos = [eField.left - wField.left + x + offset, eField.top - wField.top + y + offset]
-    return [Math.floor(ePos[1]/(wField.height/20)),Math.floor(ePos[0]/(wField.width/26))]
-}
-
-
-function getaway(ini,direct='h'){
-    const queue = [setObj(ini,0)]
-    const gate = direct=='h' ? [[8,25],[9,25],[10,25],[11,25],[12,25],[13,25]] : [[10,19],[11,19],[12,19],[13,19],[14,19],[15,19],[16,19],[17,19]]
+function getaway(pos,gate){
+    const queue = [setObj(pos,0)]
+//    const gate = direct=='h' ? [[8,25],[9,25],[10,25],[11,25],[12,25],[13,25]] : [[10,19],[11,19],[12,19],[13,19],[14,19],[15,19],[16,19],[17,19]]
 
     function setObj(pos,order, parent=null){
         const out = new Object
@@ -401,6 +443,9 @@ function reset(){
     game.enemies = []
     game.weapons = []
     game.board = []
+
+    game.gate = [[[19,9],[19,10],[19,11],[19,12],[19,13],[19,14],[19,15],[19,16]],[[7,25],[8,25],[9,25],[10,25],[11,25],[12,25]]]
+
     document.querySelector('.bottom').scrollTo(0,0)
 
     score()
