@@ -221,8 +221,8 @@ function getway(ini){
     function getWayBack(){
         const path = [queue[queue.length-1]]
         for(let i=queue.length-2; i>=0; i--){
-            if(JSON.stringify(path[path.length-1].parent)==JSON.stringify(queue[i].pos)){
-                path.push(queue[i])
+            if(JSON.stringify(path[0].parent)==JSON.stringify(queue[i].pos)){
+                path.unshift(queue[i])
             }
         }
         return path
