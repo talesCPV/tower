@@ -122,7 +122,7 @@ class Weapom{
         this.damage = 0
         this.loading = 0
         this.bullets = []
-        this.refresh()
+//        this.refresh()
         this.base = new Image()
         this.base.src = 'assets/w_base.png'
         this.base.height = this.base.width
@@ -286,12 +286,12 @@ function blocking(){
                 entrace.push(pos)
                 const len = getaway(pos,gate).length
                 if(!len){
-                    console.log('blocking!!!')
+                    alert('blocking!!!')
                     return 1
                 }
             }  
         }
-        return 0
+        return entrace.length ? 0 : 1
     }
 
     return sentido(game.gate[0]) ? 1 : sentido(game.gate[1])
@@ -390,7 +390,6 @@ function getaway(pos,gate){
     return []
 }
 
-
 function plotEnemies(){
     const cnv = document.querySelector('#enemies-field')
     if (cnv.getContext) {
@@ -408,7 +407,7 @@ function plotEnemies(){
 }
 
 function showRange(){
-    if(game.pivot){
+    if(game.pivot && game.board[game.pivot.fill[0][1]][game.pivot.fill[0][0]].index >=0){
         const range = game.weapons[game.board[game.pivot.fill[0][1]][game.pivot.fill[0][0]].index].range
         const cnv = document.querySelector('#war-field')
         const scale =  [cnv.width/13,cnv.height/10]
@@ -582,13 +581,25 @@ function buy(obj){
                     cel.pivot = [i%2,i<2?0:1]
                     cel.index = wep.level ? cel.index : game.weapons.length                
                 }
-console.log(blocking())
-                game.weapons.push(wep)
-                obj.has = 1
-                game.weapons[game.weapons.length-1].plot()            
-                showPanel(game.weapons[game.weapons.length-1])
+                if(!blocking()){
+                    game.weapons.push(wep)
+                    obj.has = 1
+//                    game.weapons[game.weapons.length-1].plot()            
+                    showPanel(game.weapons[game.weapons.length-1])
+//                    showAll()
+                    wep.refresh()
+
+                }else{
+                    for(let i=0; i<4; i++){
+                        const cel = game.board[wep.pivot[0]+(i%2)][wep.pivot[1]+(i<2?0:1)]
+                        cel.id = -1
+                        cel.level = 0
+                        cel.pivot = [0,0]
+                        cel.index = -1                
+                    }
+                    game.pivot = 0
+                }
             }
-            showAll()
         }
     }
 }
@@ -736,7 +747,7 @@ document.querySelector('#war-field').addEventListener('click',(e)=>{
         wep.level = board.level
         showPanel(wep)
     }
-    showAll()
+ //   showAll()
 
 })
 
