@@ -30,6 +30,9 @@ class Enemy{
 
         this.sprite = new Image()
         this.sprite.src = `assets/en_${this.name.toLowerCase()}.png`
+        this.scale = 0.7
+        this.spr_w = this.sprite.width*this.scale
+        this.spr_h = this.sprite.height*this.scale
 
         this.getaway()
 
@@ -39,14 +42,11 @@ class Enemy{
 Enemy.prototype.plot = function(){
 
         const cnv = document.querySelector('#enemies-field')
-        const scale = 0.7
-        const l = this.sprite.width*scale
-        const h = this.sprite.height*scale
-        const offset_ang = ((Math.atan2(l/2, h/2) * 180) / Math.PI) + 90
-        const angle = this.angle + 225
+        const offset_ang = ((Math.atan2(this.spr_w/2, this.spr_h/2) * 180) / Math.PI) + 90
+        const angle = this.angle + 45
 
-        const center = [this.x+l/2,this.y+h/2]
-        const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
+        const center = [this.x-this.spr_w,this.y-this.spr_h]
+        const raio = Math.sqrt(Math.pow(this.spr_w/2,2)+Math.pow(this.spr_h/2,2))
         const sin = Number((Math.sin(Math.PI/180 * angle)).toFixed(2))
         const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
         const cord = [center[0]+raio*cos, center[1]+raio*sin]
@@ -54,49 +54,54 @@ Enemy.prototype.plot = function(){
         if (cnv.getContext) {
             ctx = cnv.getContext('2d');
             ctx.save();
-            ctx.translate(cord[0]+((this.sprite.width-l)/2),cord[1]+(h/2));
+            ctx.translate(cord[0]+((this.sprite.width-this.spr_w)/2),cord[1]+(this.spr_h/2));
             ctx.rotate(Math.PI / 180 * (angle + offset_ang))
-            ctx.drawImage(this.sprite,0,0, l, h);
+            ctx.drawImage(this.sprite,0,0, this.spr_w, this.spr_h);
             ctx.restore(); 
         }
 }
 
 Enemy.prototype.move = function(){
-
-    const next = this.getNextXY()
-    const chegou = [0,0]
-    if(this.y != next[0]){
-        const s = this.y < next[0] ? 1 : -1
-        const d = Math.abs(next[0]-this.y) > this.speed ? this.speed*s : Math.abs(next[0]-this.y)*s
-        this.y += d
-        this.y = Number(this.y.toFixed(2))
-    }else{
-        chegou[0] = 1
-    }
-
-//    console.log(this.y, this.x,next)
-
-    if(this.x != next[1]){
-        const s = this.x < next[1] ? 1 : -1
-        const d = Math.abs(next[1]-this.x) > this.speed ? this.speed*s : Math.abs(next[1]-this.x)*s
-        this.x += d
-        this.x = Number(this.x.toFixed(2))
-    }else{
-        chegou[1] = 1
-    }
-
-    if(chegou[0] && chegou[1]){
-        this.way.splice(0,1)
-
-        console.log(this.way[0].pos)
-        if(game.board[this.way[0].pos[0]][this.way[0].pos[1]].id >= 0){
-            this.getaway()
+    if(this.way.length){
+        const next = this.getNextXY()
+        const chegou = [0,0]
+        if(this.y != next[0]){
+            const s = this.y < next[0] ? 1 : -1
+            const d = Math.abs(next[0]-this.y) > this.speed ? this.speed*s : Math.abs(next[0]-this.y)*s
+            this.y += d
+            this.y = Number(this.y.toFixed(2))
+        }else{
+            chegou[0] = 1
         }
+        
+        if(this.x != next[1]){
+            const s = this.x < next[1] ? 1 : -1
+            const d = Math.abs(next[1]-this.x) > this.speed ? this.speed*s : Math.abs(next[1]-this.x)*s
+            this.x += d
+            this.x = Number(this.x.toFixed(2))
+        }else{
+            chegou[1] = 1
+        }
+    
+        if(chegou[0] && chegou[1]){
+            this.way.splice(0,1)
+            this.kill = this.way.length ? 0 : 1
 
-        this.kill =  this.way.length ? 0 : 1
+//            console.log(this.way)
+            if(!this.kill){
+//                console.log(game.board[this.way[0].pos[0]][this.way[0].pos[1]].id >= 0)
+                if(game.board[this.way[0].pos[0]][this.way[0].pos[1]].id >= 0){
+                    this.getaway()        
+                }
+            }
 
+            
+    
+        }
+    
+    }else{
+        console.log('empty')
     }
-
     this.plot()
 
 }
@@ -106,22 +111,35 @@ Enemy.prototype.getNextXY = function(){
     const wField = document.querySelector('#war-field').getBoundingClientRect()
     const offset = [Math.abs(eField.top-wField.top),Math.abs(eField.left-wField.left)]
     const square = [(wField.height/20),(wField.width/26)]
-    return[Number((square[0]*this.way[0].pos[0] + offset[0]).toFixed(2)),Number((square[1]*this.way[0].pos[1] + offset[1]).toFixed(2))]
+
+    const y = Number((offset[0] + square[0] * this.way[0].pos[0] - (this.spr_h/2)).toFixed(2))
+    const x = Number((offset[1] + square[1] * this.way[0].pos[1] - (this.spr_w/2 - 3)).toFixed(2))
+
+    return[y,x]
 }
 
-Enemy.prototype.getXY = function(){
+Enemy.prototype.getCord = function(){
     offset = [this.sprite.height,this.sprite.width]
     const eField = document.querySelector('#enemies-field').getBoundingClientRect()
     const wField = document.querySelector('#war-field').getBoundingClientRect()
     const ePos = [eField.top - wField.top + this.y + offset[0],eField.left - wField.left + this.x + offset[1]]
-    this.pos = [Math.floor(ePos[0]/(wField.height/20)),Math.floor(ePos[1]/(wField.width/26))]
-    this.pos[0] = this.pos[0]<0 ? 0 : this.pos[0]>19 ? 19 : this.pos[0]
-    this.pos[1] = this.pos[1]<0 ? 0 : this.pos[1]>25 ? 25 : this.pos[1]
+    const cord = [Math.floor(ePos[0]/(wField.height/20)),Math.floor(ePos[1]/(wField.width/26))]
+    cord[0] = cord[0]<0 ? 0 : cord[0]>19 ? 19 : cord[0]
+    cord[1] = cord[1]<0 ? 0 : cord[1]>25 ? 25 : cord[1]
+    return cord
+}
+
+Enemy.prototype.getPos = function(y,x){
+    const eField = document.querySelector('#enemies-field').getBoundingClientRect()
+    const wField = document.querySelector('#war-field').getBoundingClientRect()
+    const offset = [Math.abs(eField.top-wField.top),Math.abs(eField.left-wField.left)]
+    const square = [(wField.height/20),(wField.width/26)]
+    return [Number((offset[0] + square[0]*y).toFixed(2)),Number((offset[1] + square[1]*x).toFixed(2))]
 }
 
 Enemy.prototype.getaway = function(){
 
-    this.getXY()
+    this.pos = this.getCord()
     let scape = []
 
     if(game.board[this.pos[0]][this.pos[1]].id >= 0){
@@ -129,9 +147,7 @@ Enemy.prototype.getaway = function(){
             const p = [this.pos[0]?this.gate[i][0]:this.pos[0],this.pos[1]?this.gate[i][1]:this.pos[1]]
             if(game.board[p[0]][p[1]].id < 0){
                 scape =  !scape.length? p : p[0] ? ((Math.abs(scape[0]-this.pos[0]) < Math.abs(p[0]-this.pos[0])) ? scape : p) : (Math.abs(scape[1]-this.pos[1]) < Math.abs(p[1]-this.pos[1])) ? scape : p
-                this.way = getaway(scape,this.gate)                 
-
-                console.log('FREE ',this.pos,scape)
+                this.way = getaway(scape,this.gate)
             }
         }
     }else{
@@ -330,8 +346,18 @@ function blocking(){
     return sentido(game.gate[0]) ? 1 : sentido(game.gate[1])
 }
 
-function teste(){
+function teste(y=0,x=0){
 
+    game.enemies.length > 1 ? game.enemies.splice(0,1) : null
+    game.enemies[0].way[0].pos = [y,x]
+    const yx = game.enemies[0].getNextXY()
+    game.enemies[0].y = yx[0]
+    game.enemies[0].x = yx[1]
+    game.enemies[0].plot()
+
+
+
+/*
     offset_y = 30
     offset_x = 40
     line_h = 14.2    
@@ -352,6 +378,7 @@ function teste(){
         game.enemies[0].y +=line_h
         game.enemies[0].angle +=5
      }
+*/
 }
 
 function getaway(pos,gate){
@@ -431,10 +458,11 @@ function plotEnemies(){
     }
 
     for(let i=0; i<game.enemies.length; i++){
-        game.enemies[i].move()
         if(game.enemies[i].kill){
             game.enemies.splice(i,1)
             game.lives--
+        }else{
+            game.enemies[i].move()
         }
     }
 }
