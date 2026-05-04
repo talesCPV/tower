@@ -28,9 +28,11 @@ class Enemy{
             this.y = -10 - Math.floor(Math.random()*50)
         }
 
-
         this.sprite = new Image()
         this.sprite.src = `assets/en_${this.name.toLowerCase()}.png`
+
+        this.getaway()
+
     }
 }
 
@@ -60,19 +62,54 @@ Enemy.prototype.plot = function(){
 }
 
 Enemy.prototype.move = function(){
-    if(this.direct == 'h'){
-        this.x += this.speed
-        this.kill = this.x >= this.offset_x + 26*this.line_w ? 1 : 0
-        this.angle = 0
+
+    const next = this.getNextXY()
+    const chegou = [0,0]
+    if(this.y != next[0]){
+        const s = this.y < next[0] ? 1 : -1
+        const d = Math.abs(next[0]-this.y) > this.speed ? this.speed*s : Math.abs(next[0]-this.y)*s
+        this.y += d
+        this.y = Number(this.y.toFixed(2))
     }else{
-        this.y += this.speed
-        this.kill = this.y >= this.offset_y + 20*this.line_h ? 1 : 0
-        this.angle = 90
+        chegou[0] = 1
     }
+
+//    console.log(this.y, this.x,next)
+
+    if(this.x != next[1]){
+        const s = this.x < next[1] ? 1 : -1
+        const d = Math.abs(next[1]-this.x) > this.speed ? this.speed*s : Math.abs(next[1]-this.x)*s
+        this.x += d
+        this.x = Number(this.x.toFixed(2))
+    }else{
+        chegou[1] = 1
+    }
+
+    if(chegou[0] && chegou[1]){
+        this.way.splice(0,1)
+
+        console.log(this.way[0].pos)
+        if(game.board[this.way[0].pos[0]][this.way[0].pos[1]].id >= 0){
+            this.getaway()
+        }
+
+        this.kill =  this.way.length ? 0 : 1
+
+    }
+
     this.plot()
+
 }
 
-Enemy.prototype.getPos = function(){
+Enemy.prototype.getNextXY = function(){
+    const eField = document.querySelector('#enemies-field').getBoundingClientRect()
+    const wField = document.querySelector('#war-field').getBoundingClientRect()
+    const offset = [Math.abs(eField.top-wField.top),Math.abs(eField.left-wField.left)]
+    const square = [(wField.height/20),(wField.width/26)]
+    return[Number((square[0]*this.way[0].pos[0] + offset[0]).toFixed(2)),Number((square[1]*this.way[0].pos[1] + offset[1]).toFixed(2))]
+}
+
+Enemy.prototype.getXY = function(){
     offset = [this.sprite.height,this.sprite.width]
     const eField = document.querySelector('#enemies-field').getBoundingClientRect()
     const wField = document.querySelector('#war-field').getBoundingClientRect()
@@ -84,7 +121,7 @@ Enemy.prototype.getPos = function(){
 
 Enemy.prototype.getaway = function(){
 
-    this.getPos()
+    this.getXY()
     let scape = []
 
     if(game.board[this.pos[0]][this.pos[1]].id >= 0){
@@ -100,10 +137,6 @@ Enemy.prototype.getaway = function(){
     }else{
         this.way = getaway(this.pos,this.gate)
     }
-
-    
-
-
 
     console.log(this.pos,this.way)   
 
