@@ -31,9 +31,12 @@ class Enemy{
         this.sprite = new Image()
         this.sprite.src = `assets/en_${this.name.toLowerCase()}.png`
         this.scale = 0.7
-        this.spr_w = this.sprite.width*this.scale
-        this.spr_h = this.sprite.height*this.scale
-
+        this.spr_w = 0
+        this.spr_h = 0
+        this.sprite.onload=()=>{
+            this.spr_w = Number((this.sprite.width*this.scale).toFixed(2))
+            this.spr_h = Number((this.sprite.height*this.scale).toFixed(2))
+        }
         this.getaway()
 
     }
@@ -86,55 +89,56 @@ Enemy.prototype.move = function(){
         if(chegou[0] && chegou[1]){
             this.way.splice(0,1)
             this.kill = this.way.length ? 0 : 1
-
-//            console.log(this.way)
-            if(!this.kill){
-//                console.log(game.board[this.way[0].pos[0]][this.way[0].pos[1]].id >= 0)
-                if(game.board[this.way[0].pos[0]][this.way[0].pos[1]].id >= 0){
-                    this.getaway()        
-                }
-            }
-
-            
-    
+            this.checkWay()
+            console.log('chegou!')
         }
-    
-    }else{
-        console.log('empty')
     }
     this.plot()
 
 }
 
+Enemy.prototype.checkWay = function(){
+    for(let i=0; i<this.way.length; i++){
+        if(game.board[this.way[i].pos[0]][this.way[i].pos[1]].id>=0){
+            this.getaway()
+        }
+    }
+}
+
 Enemy.prototype.getNextXY = function(){
-    const eField = document.querySelector('#enemies-field').getBoundingClientRect()
-    const wField = document.querySelector('#war-field').getBoundingClientRect()
-    const offset = [Math.abs(eField.top-wField.top),Math.abs(eField.left-wField.left)]
-    const square = [(wField.height/20),(wField.width/26)]
-
-    const y = Number((offset[0] + square[0] * this.way[0].pos[0] - (this.spr_h/2)).toFixed(2))
-    const x = Number((offset[1] + square[1] * this.way[0].pos[1] - (this.spr_w/2 - 3)).toFixed(2))
-
+    const y = Number((this.offset_y + this.line_h * this.way[0].pos[0] - (this.spr_h/2)).toFixed(2))
+    const x = Number((this.offset_x + this.line_w * this.way[0].pos[1] - (this.spr_w/2 - 3)).toFixed(2))
     return[y,x]
 }
 
+
+Enemy.prototype.teste = function(y,x){
+
+
+
+}
+
 Enemy.prototype.getCord = function(){
-    offset = [this.sprite.height,this.sprite.width]
-    const eField = document.querySelector('#enemies-field').getBoundingClientRect()
-    const wField = document.querySelector('#war-field').getBoundingClientRect()
-    const ePos = [eField.top - wField.top + this.y + offset[0],eField.left - wField.left + this.x + offset[1]]
-    const cord = [Math.floor(ePos[0]/(wField.height/20)),Math.floor(ePos[1]/(wField.width/26))]
+
+//    const ePos = [this.offset_y + this.y ,this.offset_x + this.x]
+
+    const cord = [Math.floor(this.y/this.line_h),Math.floor(this.x/this.line_w)]
     cord[0] = cord[0]<0 ? 0 : cord[0]>19 ? 19 : cord[0]
     cord[1] = cord[1]<0 ? 0 : cord[1]>25 ? 25 : cord[1]
     return cord
 }
 
 Enemy.prototype.getPos = function(y,x){
+/*    
     const eField = document.querySelector('#enemies-field').getBoundingClientRect()
     const wField = document.querySelector('#war-field').getBoundingClientRect()
     const offset = [Math.abs(eField.top-wField.top),Math.abs(eField.left-wField.left)]
     const square = [(wField.height/20),(wField.width/26)]
     return [Number((offset[0] + square[0]*y).toFixed(2)),Number((offset[1] + square[1]*x).toFixed(2))]
+*/
+    return [Number((this.offset_y + y*this.line_h).toFixed(2)),Number((this.offset_x + x*this.line_w).toFixed(2))]
+
+
 }
 
 Enemy.prototype.getaway = function(){
