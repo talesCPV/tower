@@ -136,7 +136,7 @@ Enemy.prototype.getPos = function(y,x){
     const square = [(wField.height/20),(wField.width/26)]
     return [Number((offset[0] + square[0]*y).toFixed(2)),Number((offset[1] + square[1]*x).toFixed(2))]
 */
-    return [Number((this.offset_y + y*this.line_h).toFixed(2)),Number((this.offset_x + x*this.line_w).toFixed(2))]
+    return [Number((this.offset_y + y*this.line_h).toFixed(2)),Number((this.offset_x + x*this.line_w).toFixed(2))   ]
 
 
 }
