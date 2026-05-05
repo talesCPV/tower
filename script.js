@@ -15,8 +15,8 @@ class Enemy{
         this.kill = 0
         this.way = []
 
-        this.offset_y = 30
-        this.offset_x = 40
+        this.offset_y = 37
+        this.offset_x = 47
         this.line_h = 14.2    
         this.line_w = 12.7
 
@@ -27,6 +27,8 @@ class Enemy{
             this.x = this.offset_x + Math.floor((Math.random()*8) + 9) * this.line_w
             this.y = -10 - Math.floor(Math.random()*50)
         }
+
+        this.cnv = document.querySelector('#enemies-field')
 
         this.sprite = new Image()
         this.sprite.src = `assets/en_${this.name.toLowerCase()}.png`
@@ -44,18 +46,17 @@ class Enemy{
 
 Enemy.prototype.plot = function(){
 
-        const cnv = document.querySelector('#enemies-field')
+//        const cnv = document.querySelector('#enemies-field')
         const offset_ang = ((Math.atan2(this.spr_w/2, this.spr_h/2) * 180) / Math.PI) + 90
         const angle = this.angle + 45
 
-        const center = [this.x-this.spr_w,this.y-this.spr_h]
         const raio = Math.sqrt(Math.pow(this.spr_w/2,2)+Math.pow(this.spr_h/2,2))
         const sin = Number((Math.sin(Math.PI/180 * angle)).toFixed(2))
         const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
-        const cord = [center[0]+raio*cos, center[1]+raio*sin]
+        const cord = [this.x+raio*cos, this.y+raio*sin]
 
-        if (cnv.getContext) {
-            ctx = cnv.getContext('2d');
+        if (this.cnv.getContext) {
+            ctx = this.cnv.getContext('2d');
             ctx.save();
             ctx.translate(cord[0]+((this.sprite.width-this.spr_w)/2),cord[1]+(this.spr_h/2));
             ctx.rotate(Math.PI / 180 * (angle + offset_ang))
@@ -68,11 +69,11 @@ Enemy.prototype.move = function(){
     if(this.way.length){
         const next = this.getNextXY()
         const chegou = [0,0]
+        
         if(this.y != next[0]){
             const s = this.y < next[0] ? 1 : -1
             const d = Math.abs(next[0]-this.y) > this.speed ? this.speed*s : Math.abs(next[0]-this.y)*s
-            this.y += d
-            this.y = Number(this.y.toFixed(2))
+            this.y += Number(d.toFixed(2))
         }else{
             chegou[0] = 1
         }
@@ -106,39 +107,31 @@ Enemy.prototype.checkWay = function(){
 }
 
 Enemy.prototype.getNextXY = function(){
-    const y = Number((this.offset_y + this.line_h * this.way[0].pos[0] - (this.spr_h/2)).toFixed(2))
-    const x = Number((this.offset_x + this.line_w * this.way[0].pos[1] - (this.spr_w/2 - 3)).toFixed(2))
+    const y = Number((this.offset_y + (this.line_h * this.way[0].pos[0]) ).toFixed(2))
+    const x = Number((this.offset_x + (this.line_w * this.way[0].pos[1]) ).toFixed(2))
     return[y,x]
 }
 
 
-Enemy.prototype.teste = function(y,x){
-
+Enemy.prototype.teste = function(y=0,x=0){
+    const pos = this.getPos(y,x)
+    this.y = pos[0]
+    this.x = pos[1]
+    console.log([this.y, this.x])
+    this.plot()
 
 
 }
 
 Enemy.prototype.getCord = function(){
-
-//    const ePos = [this.offset_y + this.y ,this.offset_x + this.x]
-
-    const cord = [Math.floor(this.y/this.line_h),Math.floor(this.x/this.line_w)]
+    const cord = [Math.floor((this.y - this.offset_y)/this.line_h),Math.floor((this.x - this.offset_x)/this.line_w)]
     cord[0] = cord[0]<0 ? 0 : cord[0]>19 ? 19 : cord[0]
     cord[1] = cord[1]<0 ? 0 : cord[1]>25 ? 25 : cord[1]
     return cord
 }
 
 Enemy.prototype.getPos = function(y,x){
-/*    
-    const eField = document.querySelector('#enemies-field').getBoundingClientRect()
-    const wField = document.querySelector('#war-field').getBoundingClientRect()
-    const offset = [Math.abs(eField.top-wField.top),Math.abs(eField.left-wField.left)]
-    const square = [(wField.height/20),(wField.width/26)]
-    return [Number((offset[0] + square[0]*y).toFixed(2)),Number((offset[1] + square[1]*x).toFixed(2))]
-*/
-    return [Number((this.offset_y + y*this.line_h).toFixed(2)),Number((this.offset_x + x*this.line_w).toFixed(2))   ]
-
-
+    return [Number((this.offset_y + (y*this.line_h)).toFixed(2)),Number((this.offset_x + (x*this.line_w)).toFixed(2))   ]
 }
 
 Enemy.prototype.getaway = function(){
