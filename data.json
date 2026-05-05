@@ -353,7 +353,7 @@
             "speed" : 1
         },
         {   "name":"IMMUNE",
-            "background" : "#ab02a8",
+            "background" : "#a0a",
             "flying" : 0,
             "imune" : 1,
             "health" :50,
