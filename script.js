@@ -68,31 +68,21 @@ Enemy.prototype.plot = function(){
 Enemy.prototype.move = function(){
     if(this.way.length){
         const next = this.getNextXY()
-        const chegou = [0,0]
-        
-        if(this.y != next[0]){
-            const s = this.y < next[0] ? 1 : -1
-            const d = Math.abs(next[0]-this.y) > this.speed ? this.speed*s : Math.abs(next[0]-this.y)*s
-            this.y += Number(d.toFixed(2))
-        }else{
-            chegou[0] = 1
-        }
-        
-        if(this.x != next[1]){
-            const s = this.x < next[1] ? 1 : -1
-            const d = Math.abs(next[1]-this.x) > this.speed ? this.speed*s : Math.abs(next[1]-this.x)*s
-            this.x += d
-            this.x = Number(this.x.toFixed(2))
-        }else{
-            chegou[1] = 1
-        }
-    
-        if(chegou[0] && chegou[1]){
+        const speed = [this.y < next[0] ? 1 : -1,this.x < next[1] ? 1 : -1]
+
+        const dist = []
+        dist[0] = Number(((Math.abs(next[0]-this.y) > this.speed ? this.speed : Math.abs(next[0]-this.y))*speed[0]).toFixed(2))
+        dist[1] = Number(((Math.abs(next[1]-this.x) > this.speed ? this.speed : Math.abs(next[1]-this.x))*speed[1]).toFixed(2))
+
+        this.y += dist[0]
+        this.x +=dist[1]
+
+        if(!dist[0] && !dist[1]){
             this.way.splice(0,1)
             this.kill = this.way.length ? 0 : 1
             this.checkWay()
             console.log('chegou!')
-        }
+        }            
     }
     this.plot()
 
