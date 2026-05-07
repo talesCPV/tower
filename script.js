@@ -153,6 +153,7 @@ class Weapom{
         this.loading = 0
         this.aim = null
         this.bullets = []
+        this.shottime = 0
 
         this.line_h = 14.2    
         this.line_w = 12.7
@@ -256,6 +257,8 @@ Weapom.prototype.load = function(){
 
 Weapom.prototype.shot = function(){
 
+    this.shottime--
+
     function distance(wep,enemy){
         const catetos = [Math.abs(wep.cord[0] + enemy.offset_y - enemy.y),Math.abs(wep.cord[1] + enemy.offset_x - enemy.x)]
         return Math.sqrt(Math.pow(catetos[0],2)+Math.pow(catetos[1],2))
@@ -266,19 +269,33 @@ Weapom.prototype.shot = function(){
         return (Math.atan2(catetos[0],(catetos[1])) * 180 / Math.PI) 
     }
 
-    if(this.aim == null){
-        for(let i=0; i<game.enemies.length; i++){
-            this.aim = (distance(this,game.enemies[i]) < this.range) ? i : this.aim
-        }
-    }else{
-        const dist = distance(this,game.enemies[this.aim])
-        if(dist < this.range){
-            this.angle = angle(this,game.enemies[this.aim])
-            this.plot()
+   
+    try{
+        if(this.aim == null){
+            for(let i=0; i<game.enemies.length; i++){
+                this.aim = (distance(this,game.enemies[i]) < this.range) ? i : this.aim
+            }
         }else{
-            this.aim = null
+            const dist = distance(this,game.enemies[this.aim])
+            if(dist < this.range){
+                this.angle = angle(this,game.enemies[this.aim])
+                this.plot()
+                if(this.shottime <= 0){
+                    this.shottime = this.speed * 100
+                    console.log('shot!!!')
+                }
+            }else{
+                this.aim = null
+                this.shottime = 0
+            }
         }
+    }catch{
+//        console.error('out of bounds!')
+        this.aim = null
+        this.shottime = 0
     }
+    
+
 }
 
 class Bullet{
