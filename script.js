@@ -101,15 +101,6 @@ Enemy.prototype.getNextXY = function(){
     return[y,x]
 }
 
-
-Enemy.prototype.teste = function(y=0,x=0){
-    const pos = this.getPos(y,x)
-    this.y = pos[0]
-    this.x = pos[1]
-    console.log([this.y, this.x])
-    this.plot()
-}
-
 Enemy.prototype.getCord = function(){
     const cord = [Math.floor((this.y - this.offset_y)/this.line_h),Math.floor((this.x - this.offset_x)/this.line_w)]
     cord[0] = cord[0]<0 ? 0 : cord[0]>19 ? 19 : cord[0]
@@ -160,8 +151,17 @@ class Weapom{
         this.sell = 0
         this.damage = 0
         this.loading = 0
+        this.aim = null
         this.bullets = []
-//        this.refresh()
+
+        this.line_h = 14.2    
+        this.line_w = 12.7
+
+        this.cord = [y*this.line_h,x*this.line_w]
+
+        this.cnv = document.querySelector('#war-field')
+        this.scale =  [this.cnv.width/13,this.cnv.height/10]
+
         this.base = new Image()
         this.base.src = 'assets/w_base.png'
         this.base.height = this.base.width
@@ -200,27 +200,25 @@ Weapom.prototype.plot = function(){
     arm.src = `assets/w${this.id+1}_cannon.png`
 
     arm.onload= ()=>{
-        const cnv = document.querySelector('#war-field')
-        const scale =  [cnv.width/13,cnv.height/10]
-        const offset = [(scale[1]/2) * this.pivot[0],(scale[0]/2) * this.pivot[1]]
+        const offset = [this.line_h * this.pivot[0],this.line_w * this.pivot[1]]
 
         const l = arm.width*0.7
         const h = arm.height*0.7
         const angle = this.angle + 45
 
-        const center = [offset[1]+scale[0]/2,offset[0]+scale[1]/2]
+        const center = [offset[1]+this.line_w,offset[0]+this.line_h]
         const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
         const sin = Number((Math.sin(Math.PI/180 * angle)).toFixed(2))
         const cos = Number((Math.cos(Math.PI/180 * angle)).toFixed(2))
         const cord = [center[0]+raio*cos, center[1]+raio*sin]
 
-        if (cnv.getContext) {
-            ctx = cnv.getContext('2d');
-            ctx.clearRect(offset[1],offset[0], scale[0], scale[1])
-            ctx.drawImage(this.base,offset[1],offset[0], scale[0], scale[1])
+        if (this.cnv.getContext) {
+            ctx = this.cnv.getContext('2d');
+            ctx.clearRect(offset[1],offset[0], this.line_w*2, this.line_h*2)
+            ctx.drawImage(this.base,offset[1],offset[0], this.line_w*2, this.line_h*2)
             ctx.fillStyle = '#a40300'
             for(let i=0; i<this.level; i++){
-                ctx.fillRect(offset[1]+(i*4.5)+2,offset[0] + scale[1]-5, 3, 2);
+                ctx.fillRect(offset[1]+(i*4.5)+2,offset[0] + (this.line_h*2)-5, 3, 2);
             }
             ctx.save();
             ctx.translate(cord[0],cord[1]);
@@ -256,6 +254,33 @@ Weapom.prototype.load = function(){
 
 }
 
+Weapom.prototype.shot = function(){
+
+    function distance(wep,enemy){
+        const catetos = [Math.abs(wep.cord[0] + enemy.offset_y - enemy.y),Math.abs(wep.cord[1] + enemy.offset_x - enemy.x)]
+        return Math.sqrt(Math.pow(catetos[0],2)+Math.pow(catetos[1],2))
+    }
+
+    function angle(wep,enemy){
+        const catetos = [wep.cord[0] + enemy.offset_y - enemy.y,wep.cord[1] + enemy.offset_x - enemy.x]
+        return (Math.atan2(catetos[0],(catetos[1])) * 180 / Math.PI) 
+    }
+
+    if(this.aim == null){
+        for(let i=0; i<game.enemies.length; i++){
+            this.aim = (distance(this,game.enemies[i]) < this.range) ? i : this.aim
+        }
+    }else{
+        const dist = distance(this,game.enemies[this.aim])
+        if(dist < this.range){
+            this.angle = angle(this,game.enemies[this.aim])
+            this.plot()
+        }else{
+            this.aim = null
+        }
+    }
+}
+
 class Bullet{
     constructor(y,x,force,speed,angle){
         this.pivot = [y,x]
@@ -281,6 +306,7 @@ game.clock = setInterval(()=>{
             game.time = game.time < 0 ? 0 : game.time
         }
         plotEnemies()
+        shot()
 
     }else{
         game.pause = 1
@@ -440,6 +466,13 @@ function getaway(pos,gate){
     return []
 }
 
+function shot(){
+
+    for(let i=0; i<game.weapons.length; i++){
+        game.weapons[i].shot()
+    }
+}
+
 function plotEnemies(){
     const cnv = document.querySelector('#enemies-field')
     if (cnv.getContext) {
@@ -459,15 +492,15 @@ function plotEnemies(){
 
 function showRange(){
     if(game.pivot && game.board[game.pivot.fill[0][1]][game.pivot.fill[0][0]].index >=0){
-        const range = game.weapons[game.board[game.pivot.fill[0][1]][game.pivot.fill[0][0]].index].range
+        const pivot = game.pivot.fill[0]
+        const weapom = game.weapons[game.board[pivot[1]][pivot[0]].index]
         const cnv = document.querySelector('#war-field')
-        const scale =  [cnv.width/13,cnv.height/10]
-        const offset = [(scale[1]/2) * game.pivot.fill[0][1],(scale[0]/2) * game.pivot.fill[0][0]]
+        const offset = [weapom.line_w * pivot[0],weapom.line_h * pivot[1]]
         if (cnv.getContext) {
             ctx = cnv.getContext('2d')
             ctx.fillStyle = '#0000002b'
             ctx.beginPath();
-            ctx.arc(offset[1]+scale[0]/2,offset[0]+scale[1]/2, range, 0, 2*Math.PI);
+            ctx.arc(offset[0] + weapom.line_w,offset[1] + weapom.line_h, weapom.range, 0, 2*Math.PI);
             ctx.fill();
         }
     }
