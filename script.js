@@ -126,9 +126,6 @@ Enemy.prototype.getaway = function(){
     let scape = []
 
     if(this.flying){
-        console.log(this.pos)
-        console.log(this.gate)
-        console.log(this.direct)
         this.way = []
         const d = this.direct
         const ini = this.pos[d=='h' ? 1 : 0] 
@@ -137,8 +134,6 @@ Enemy.prototype.getaway = function(){
             const way = {'pos':[d=='h' ?this.pos[0]:i,d=='h'?i:this.pos[1]]}
             this.way.push(way)
         }
-        console.log(this.way)
-
     }else if(game.board[this.pos[0]][this.pos[1]].id >= 0){
         for(let i=0; i<this.gate.length; i++){            
             const p = [this.pos[0]?this.gate[i][0]:this.pos[0],this.pos[1]?this.gate[i][1]:this.pos[1]]
@@ -211,7 +206,7 @@ Weapom.prototype.plot = function(){
 
         const l = arm.width*0.7
         const h = arm.height*0.7
-        const angle = this.angle + 225
+        const angle = this.angle + 45
 
         const center = [offset[1]+scale[0]/2,offset[0]+scale[1]/2]
         const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
@@ -564,7 +559,6 @@ function newWave(){
     for(let i=0; i<nextWave.qtd; i++){
         game.enemies.push(new Enemy(nextWave.id_enemy,nextWave.health,i%2?'h':'v'))
     }
-    console.log(nextWave)
 }
 
 function score(){
