@@ -22,9 +22,10 @@ class Enemy{
 
         if(direct == 'h'){
             this.x = -10 - Math.floor(Math.random()*50)
-            this.y = this.offset_y + Math.floor((Math.random()*6) + 7) * this.line_h
+            this.y = Number((this.offset_y + ((Math.random()*6) + 7)*this.line_h).toFixed(2))
         }else{
-            this.x = this.offset_x + Math.floor((Math.random()*8) + 9) * this.line_w
+//            this.x = this.offset_x + Math.floor((Math.random()*8) + 9) * this.line_w
+            this.x = Number((this.offset_x + ((Math.random()*8) + 9)*this.line_w).toFixed(2))
             this.y = -10 - Math.floor(Math.random()*50)
         }
 
@@ -45,8 +46,6 @@ class Enemy{
 }
 
 Enemy.prototype.plot = function(){
-
-//        const cnv = document.querySelector('#enemies-field')
         const offset_ang = ((Math.atan2(this.spr_w/2, this.spr_h/2) * 180) / Math.PI) + 90
         const angle = this.angle + 45
 
@@ -74,14 +73,14 @@ Enemy.prototype.move = function(){
         dist[0] = Number(((Math.abs(next[0]-this.y) > this.speed ? this.speed : Math.abs(next[0]-this.y))*speed[0]).toFixed(2))
         dist[1] = Number(((Math.abs(next[1]-this.x) > this.speed ? this.speed : Math.abs(next[1]-this.x))*speed[1]).toFixed(2))
 
+        this.angle = (Math.atan2(dist[1],(dist[0]*-1)) * 180 / Math.PI) + 90
         this.y += dist[0]
         this.x +=dist[1]
 
         if(!dist[0] && !dist[1]){
             this.way.splice(0,1)
             this.kill = this.way.length ? 0 : 1
-            this.checkWay()
-            console.log('chegou!')
+            !this.flying ? this.checkWay() : null
         }            
     }
     this.plot()
@@ -109,8 +108,6 @@ Enemy.prototype.teste = function(y=0,x=0){
     this.x = pos[1]
     console.log([this.y, this.x])
     this.plot()
-
-
 }
 
 Enemy.prototype.getCord = function(){
@@ -125,11 +122,24 @@ Enemy.prototype.getPos = function(y,x){
 }
 
 Enemy.prototype.getaway = function(){
-
     this.pos = this.getCord()
     let scape = []
 
-    if(game.board[this.pos[0]][this.pos[1]].id >= 0){
+    if(this.flying){
+        console.log(this.pos)
+        console.log(this.gate)
+        console.log(this.direct)
+        this.way = []
+        const d = this.direct
+        const ini = this.pos[d=='h' ? 1 : 0] 
+        const out = this.gate[0][d=='h' ? 1 : 0]
+        for(let i=ini; i<out;i++){
+            const way = {'pos':[d=='h' ?this.pos[0]:i,d=='h'?i:this.pos[1]]}
+            this.way.push(way)
+        }
+        console.log(this.way)
+
+    }else if(game.board[this.pos[0]][this.pos[1]].id >= 0){
         for(let i=0; i<this.gate.length; i++){            
             const p = [this.pos[0]?this.gate[i][0]:this.pos[0],this.pos[1]?this.gate[i][1]:this.pos[1]]
             if(game.board[p[0]][p[1]].id < 0){
@@ -140,8 +150,6 @@ Enemy.prototype.getaway = function(){
     }else{
         this.way = getaway(this.pos,this.gate)
     }
-
-    console.log(this.pos,this.way)   
 
 }
 
@@ -607,6 +615,7 @@ function showWeapon(wp=0){
     document.querySelector('#panel-2').classList.add('hide')
     document.querySelector('.sell').classList.add('hide')
     document.querySelector('#arm').classList.remove('hide')
+    document.querySelector('.grid').classList.add('over')
 }
 
 function buy(obj){
@@ -649,6 +658,7 @@ function buy(obj){
                 }
             }
         }
+        showAll()
     }
 }
 
@@ -708,6 +718,8 @@ function setPosition(e){
         board.cel = [game.weapons[wep_index].pivot][0]
         showPanel(board)
     }
+    showAll()
+
 }
 
 function getPosition(e){
@@ -786,6 +798,7 @@ document.querySelector('#war-field').addEventListener('click',(e)=>{
         game.pivot = 0
         document.querySelector('#panel-1').classList.add('hide')
         document.querySelector('#panel-2').classList.add('hide')
+        document.querySelector('.grid').classList.remove('over')
     }else{
         game.pivot = pivot
         const board = game.board[pivot.fill[0][1]][pivot.fill[0][0]]
@@ -795,7 +808,7 @@ document.querySelector('#war-field').addEventListener('click',(e)=>{
         wep.level = board.level
         showPanel(wep)
     }
- //   showAll()
+    showAll()
 
 })
 

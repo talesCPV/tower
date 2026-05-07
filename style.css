@@ -27,6 +27,10 @@
         display: none !important;
     }
 
+    .over{
+        z-index: 1;
+    }
+
     .desktop{
         width: 600px;
         height: 450px;
@@ -288,12 +292,12 @@
         align-items: center;
         width: 10%;
     }
-
+/*
     .arm .cel-path:hover{
         background-color: rgba(58, 226, 58, 0.5);
         cursor: pointer;
     }
-
+*/
     .enemy-square{
         position: relative;
         display: flex;

@@ -387,7 +387,7 @@
             "qtd" : 2,
             "boss" : 0
         },
-        {   "id_enemy" : 0,
+        {   "id_enemy" : 5,
             "health" : 1,
             "qtd" : 2,
             "boss" : 0
