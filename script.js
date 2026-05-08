@@ -1,4 +1,3 @@
-
 class Enemy{
     constructor(id_en=0, health=1, direct = 'h'){
         this.id = id_en
@@ -11,10 +10,8 @@ class Enemy{
         this.angle = 0
         this.direct = direct
         this.gate = game.gate[direct=='h' ? 1 : 0]  
-
         this.kill = 0
         this.way = []
-
         this.offset_y = 37
         this.offset_x = 47
         this.line_h = 14.2    
@@ -30,7 +27,6 @@ class Enemy{
         }
 
         this.cnv = document.querySelector('#enemies-field')
-
         this.sprite = new Image()
         this.sprite.src = `assets/en_${this.name.toLowerCase()}.png`
         this.scale = 0.7
@@ -41,7 +37,6 @@ class Enemy{
             this.spr_h = Number((this.sprite.height*this.scale).toFixed(2))
         }
         this.getaway()
-
     }
 }
 
@@ -154,15 +149,11 @@ class Weapom{
         this.aim = null
         this.bullets = []
         this.shottime = 0
-
         this.line_h = 14.2    
         this.line_w = 12.7
-
         this.cord = [y*this.line_h,x*this.line_w]
-
         this.cnv = document.querySelector('#war-field')
         this.scale =  [this.cnv.width/13,this.cnv.height/10]
-
         this.base = new Image()
         this.base.src = 'assets/w_base.png'
         this.base.height = this.base.width
@@ -202,11 +193,9 @@ Weapom.prototype.plot = function(){
 
     arm.onload= ()=>{
         const offset = [this.line_h * this.pivot[0],this.line_w * this.pivot[1]]
-
         const l = arm.width*0.7
         const h = arm.height*0.7
         const angle = this.angle + 45
-
         const center = [offset[1]+this.line_w,offset[0]+this.line_h]
         const raio = Math.sqrt(Math.pow(l/2,2)+Math.pow(h/2,2))
         const sin = Number((Math.sin(Math.PI/180 * angle)).toFixed(2))
@@ -256,7 +245,6 @@ Weapom.prototype.load = function(){
 }
 
 Weapom.prototype.shot = function(){
-
     this.shottime--
 
     function distance(wep,enemy){
@@ -269,7 +257,6 @@ Weapom.prototype.shot = function(){
         return (Math.atan2(catetos[0],(catetos[1])) * 180 / Math.PI) 
     }
 
-   
     try{
         if(this.aim == null){
             for(let i=0; i<game.enemies.length; i++){
@@ -282,6 +269,8 @@ Weapom.prototype.shot = function(){
                 this.plot()
                 if(this.shottime <= 0){
                     this.shottime = this.speed * 100
+                    const center = [this.line_h + this.cord[0],this.line_w + this.cord[1]]
+                    this.bullets.push(new Bullet(center,this.damage,this.speed,this.angle,this.aim))
                     console.log('shot!!!')
                 }
             }else{
@@ -294,21 +283,78 @@ Weapom.prototype.shot = function(){
         this.aim = null
         this.shottime = 0
     }
-    
+
+    for(let i=0; i<this.bullets.length; i++){
+        this.bullets[i].move() ? this.bullets.splice(i,1) : null
+    }
 
 }
 
 class Bullet{
-    constructor(y,x,force,speed,angle){
-        this.pivot = [y,x]
+    constructor(pos,force,speed,angle,enemy){
+        this.pos = pos
         this.angle = angle
         this.force = force
         this.speed = speed
+        this.dist = null
+        this.cnv = document.querySelector('#enemies-field')
+        this.offset_y = game.enemies[enemy].offset_y
+        this.offset_x = game.enemies[enemy].offset_x
+        this.enemy_index = enemy
+    }
+}
+
+Bullet.prototype.move = function(){
+
+    if(this.dist==null){
+        const sin = -1 * Number((Math.sin(Math.PI/180 * this.angle)).toFixed(2))
+        const cos = -1 * Number((Math.cos(Math.PI/180 * this.angle)).toFixed(2))
+        this.dist = [sin*this.speed*0.5,cos*this.speed*0.5]
+        this.pos = [this.pos[0]+this.offset_y,this.pos[1]+this.offset_x] 
+    }else{
+        if (this.cnv.getContext) {
+            ctx = this.cnv.getContext('2d');
+            ctx.clearRect(this.pos[1]-2.5,this.pos[0]-2.5, 5, 5)
+        }
+    }
+    this.pos = [this.pos[0] + this.dist[0],this.pos[1] + this.dist[1]]
+
+    out = (this.pos[0]<0 || this.pos[1]<0 || this.pos[0] > this.cnv.height || this.pos[1] > this.cnv.width) ? 1 : 0
+
+    this.plot()
+
+    function distance(pos,enemy){
+        const catetos = [Math.abs(pos[0] - enemy.y),Math.abs(pos[1] - enemy.x)]
+        return Math.floor(Math.sqrt(Math.pow(catetos[0],2)+Math.pow(catetos[1],2)))
+    }
+
+    try{
+        const dist = distance(this.pos,game.enemies[this.enemy_index])
+        if(dist<20){
+            console.log('HIT!!!')
+            out = 1
+            game.enemies[this.enemy_index].health -= this.force
+        }    
+    }catch{
+        null
+    }
+
+
+
+    return out
+}
+
+Bullet.prototype.plot = function(){
+    if (this.cnv.getContext) {
+        ctx = this.cnv.getContext('2d');
+        ctx.beginPath();
+        ctx.fillStyle = '#a40300'
+        ctx.arc(this.pos[1],this.pos[0], 5, 0, 2 * Math.PI);
+        ctx.fill();
     }
 }
 
 const game = new Object
-
 
 game.clock = setInterval(()=>{
     if(!game.pause && game.scroll < 4098 ){
@@ -324,7 +370,6 @@ game.clock = setInterval(()=>{
         }
         plotEnemies()
         shot()
-
     }else{
         game.pause = 1
         document.querySelector('#btn-start').innerHTML = 'START' 
@@ -342,7 +387,7 @@ async function loadData() {
     reset()
 }
 
-function showAll(){ 
+function showAll(){
     const cnv = document.querySelector('#war-field')
     if (cnv.getContext) {
         ctx = cnv.getContext('2d');
@@ -352,7 +397,6 @@ function showAll(){
     for(let i=0; i<game.weapons.length; i++){
         game.weapons[i].plot()
     }
-
     showRange()
 }
 
@@ -375,48 +419,11 @@ function blocking(){
         }
         return entrace.length ? 0 : 1
     }
-
     return sentido(game.gate[0]) ? 1 : sentido(game.gate[1])
-}
-
-function teste(y=0,x=0){
-
-    game.enemies.length > 1 ? game.enemies.splice(0,1) : null
-    game.enemies[0].way[0].pos = [y,x]
-    const yx = game.enemies[0].getNextXY()
-    game.enemies[0].y = yx[0]
-    game.enemies[0].x = yx[1]
-    game.enemies[0].plot()
-
-
-
-/*
-    offset_y = 30
-    offset_x = 40
-    line_h = 14.2    
-    line_w = 12.7
-
-    game.enemies.push(new Enemy(0)) 
-    game.enemies[0].x = offset_x
-    game.enemies[0].y = offset_y
-    for(let i=0; i<26; i++){
-        game.enemies[0].plot()
-        game.enemies[0].x +=line_w
-        game.enemies[0].angle +=5
-     }
-     game.enemies[0].x = offset_x
-     game.enemies[0].y = offset_y
-     for(let i=0; i<20; i++){
-        game.enemies[0].plot()
-        game.enemies[0].y +=line_h
-        game.enemies[0].angle +=5
-     }
-*/
 }
 
 function getaway(pos,gate){
     const queue = [setObj(pos,0)]
-//    const gate = direct=='h' ? [[8,25],[9,25],[10,25],[11,25],[12,25],[13,25]] : [[10,19],[11,19],[12,19],[13,19],[14,19],[15,19],[16,19],[17,19]]
 
     function setObj(pos,order, parent=null){
         const out = new Object
@@ -479,12 +486,10 @@ function getaway(pos,gate){
         }
         p++
     }
-
     return []
 }
 
 function shot(){
-
     for(let i=0; i<game.weapons.length; i++){
         game.weapons[i].shot()
     }
@@ -498,9 +503,9 @@ function plotEnemies(){
     }
 
     for(let i=0; i<game.enemies.length; i++){
-        if(game.enemies[i].kill){
+        if(game.enemies[i].kill || game.enemies[i].health <= 0){
+            game.lives -= game.enemies[i].health>0 ? 1 : 0
             game.enemies.splice(i,1)
-            game.lives--
         }else{
             game.enemies[i].move()
         }
@@ -531,23 +536,17 @@ function reset(){
     game.score = 0
     game.pivot = 0
     game.begin = 0
-
     game.count=0
-
     game.grid = 1
     game.mute = 0
     game.pause = 1
-
     game.scroll = 0
-
     game.enemies = []
     game.weapons = []
     game.board = []
-
     game.gate = [[[19,9],[19,10],[19,11],[19,12],[19,13],[19,14],[19,15],[19,16]],[[7,25],[8,25],[9,25],[10,25],[11,25],[12,25]]]
-
+    
     document.querySelector('.bottom').scrollTo(0,0)
-
     score()
 
     for(let y=0; y<20; y++){
@@ -561,8 +560,6 @@ function reset(){
             game.board[game.board.length-1].push(obj)
         }
     }
-
-    // Enemies
 
     const bottom = document.querySelector('.bottom')
     bottom.innerHTML = ''
@@ -620,7 +617,6 @@ function score(){
         document.querySelector('.score').innerHTML = `Score:${game.score}`
         document.querySelector('.bottom').scrollTo(game.scroll,0)
     }catch{null}
-
 }
 
 function showPanel(wep){
@@ -653,9 +649,7 @@ function showWeapon(wp=0){
     wep.id = wp
     wep.level = 0
     wep.angle = 0
-
     showPanel(wep)
-
     document.querySelector('#panel-2').classList.add('hide')
     document.querySelector('.sell').classList.add('hide')
     document.querySelector('#arm').classList.remove('hide')
@@ -685,9 +679,7 @@ function buy(obj){
                 if(!blocking()){
                     game.weapons.push(wep)
                     obj.has = 1
-//                    game.weapons[game.weapons.length-1].plot()            
                     showPanel(game.weapons[game.weapons.length-1])
-//                    showAll()
                     wep.refresh()
 
                 }else{
@@ -731,7 +723,6 @@ function sell(obj){
     game.pivot = 0
     document.querySelector('#panel-1').classList.add('hide')
     document.querySelector('#panel-2').classList.add('hide')
-
     showAll()
 }
 
@@ -763,7 +754,6 @@ function setPosition(e){
         showPanel(board)
     }
     showAll()
-
 }
 
 function getPosition(e){
@@ -785,7 +775,6 @@ function getPosition(e){
             obj.fill[i][1] -= pivot[0]            
         }
     }
-
     return obj
 }
 
